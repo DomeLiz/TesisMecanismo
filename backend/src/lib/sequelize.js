@@ -9,7 +9,7 @@ const sequelize = new Sequelize(
     config.dbPassword,
     {
         host: config.dbHost,
-        dialect: 'postgres' //ojo 
+        dialect: 'postgresql' //ojo 
     }
 );
 sequelize.sync();

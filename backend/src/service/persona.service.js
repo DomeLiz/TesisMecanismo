@@ -1,3 +1,5 @@
+const { models } = require('../lib/sequelize');
+
 class PersonService {
 
     constructor(){}
