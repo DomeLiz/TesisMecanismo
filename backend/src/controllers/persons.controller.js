@@ -1,10 +1,10 @@
 //metodos para cceder a la base
-const PersonService = require('../service/persona.service');
-const service = new PersonService();
+const PersonsService = require('../service/persona.service');
+const service = new PersonsService();
 
 const create = async (req, res) => {
     try {
-        const response = await service.create(red.body);
+        const response = await service.create(req.body);
         res.json({ success: true, data: response});
     } catch ( error) {
         res.status(500).send({ success: false, message: error.message});

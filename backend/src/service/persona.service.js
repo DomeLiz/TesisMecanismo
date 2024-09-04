@@ -21,7 +21,7 @@ class PersonService {
 
     async update(id, data) {
         const model = await this.findOne(id);
-        const res = await models.update(data);
+        const res = await model.update(data);
         return res;
     }
 
