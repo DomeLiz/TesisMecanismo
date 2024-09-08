@@ -9,10 +9,14 @@ const sequelize = new Sequelize(
     config.dbPassword,
     {
         host: config.dbHost,
-        dialect: 'postgresql' //ojo 
+        dialect: 'postgres' //ojo 
     }
 );
-sequelize.sync();
+sequelize.sync()
+    .then(() => console.log('Sincronización completa'))
+    .catch(error => console.error('Error en la sincronización:', error));
+
+
 setupModels(sequelize);
 
 module.exports = sequelize;

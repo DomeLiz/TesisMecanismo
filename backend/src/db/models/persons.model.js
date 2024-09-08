@@ -34,7 +34,18 @@ const PersonSchema = {
         allowNull: true,
         type: DataTypes.INTEGER,
         field:'phone'
-    }
+    },
+    email: {
+      allowNull: false,
+      type: DataTypes.STRING,
+      unique: true, // Añadir el campo email a persons
+    },
+    cedula: {
+      allowNull: false,
+      type: DataTypes.STRING,
+      unique: true, 
+    },
+
 }
 
 module.exports = { Person, PersonSchema};

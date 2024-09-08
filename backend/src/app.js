@@ -4,6 +4,10 @@ const cors = require('cors');
 
 dotenv.config();
 const app = express();
+// Configuración de CORS
+app.use(cors({
+    origin: 'http://localhost:3001' // Permite solicitudes desde el frontend
+  }));
 
 const port = process.env.PORT || 3000;
 
