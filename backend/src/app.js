@@ -6,8 +6,9 @@ dotenv.config();
 const app = express();
 // Configuración de CORS
 app.use(cors({
-    origin: 'http://localhost:3001' // Permite solicitudes desde el frontend
-  }));
+    //origin: 'http://localhost:3001' // Permite solicitudes desde el frontend
+    origin: 'https://controlpii.surge.sh'
+}));
 
 const port = process.env.PORT || 3000;
 
