@@ -7,7 +7,6 @@ const app = express();
 
 // Configuración de CORS
 app.use(cors({
-    //origin: 'https://controlpii.surge.sh' // Permite solicitudes desde tu frontend en Surge
     origin: ['http://localhost:3001', 'https://controlpii.surge.sh'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
