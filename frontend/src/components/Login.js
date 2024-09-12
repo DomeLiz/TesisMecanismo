@@ -22,13 +22,33 @@ const Login = () => {
     }
   };
 
+  const handleRegister = () => {
+    navigate('/register'); // Redirige a la página de registro
+  };
+
   return (
-    <form onSubmit={handleSubmit}>
-      <input name="cedula" placeholder="Cédula" value={form.cedula} onChange={handleChange} required />
-      <input name="password" placeholder="Contraseña" type="password" value={form.password} onChange={handleChange} required />
-      <button type="submit">Iniciar sesión</button>
-      {error && <p>{error}</p>}
-    </form>
+    <div>
+      <form onSubmit={handleSubmit}>
+        <input
+          name="cedula"
+          placeholder="Cédula"
+          value={form.cedula}
+          onChange={handleChange}
+          required
+        />
+        <input
+          name="password"
+          placeholder="Contraseña"
+          type="password"
+          value={form.password}
+          onChange={handleChange}
+          required
+        />
+        <button type="submit">Iniciar sesión</button>
+        {error && <p>{error}</p>}
+      </form>
+      <button onClick={handleRegister}>Registrarse</button> {/* Botón de registro */}
+    </div>
   );
 };
 

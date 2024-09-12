@@ -41,7 +41,7 @@ class PersonService {
         }
       }
 
-    async create(data) {
+    async create1(data) {
         const { name, address, phone, email, cedula, password } = data;
         const transaction = await sequelize.transaction();
       
@@ -77,6 +77,46 @@ class PersonService {
           await transaction.rollback();  // Revertir la transacción en caso de error
           console.error('Error al crear usuario y persona:', error.message);
           throw new Error('Error al crear usuario y persona.');
+        }
+      }
+
+      async create(data) {
+        const { name, address, phone, email, cedula, password } = data;
+        const transaction = await sequelize.transaction();
+        
+        try {
+          // Verificar si ya existe una persona o usuario con la misma cédula
+          const existingUser = await models.User.findOne({ where: { cedula } });
+          if (existingUser) {
+            throw new Error('El usuario ya existe con esa cédula');
+          }
+      
+          // Insertar en la tabla persons
+          const person = await models.Person.create({
+            name,
+            address,
+            phone,
+            email,
+            cedula
+          }, { transaction });
+      
+          // Encriptar la contraseña
+          const hashedPassword = await bcrypt.hash(password, 10);
+      
+          // Insertar en la tabla users
+          const user = await models.User.create({
+            cedula,
+            password: hashedPassword,  // Almacenar la contraseña encriptada
+            personId: person.id  // Relacionar el registro con la persona creada
+          }, { transaction });
+      
+          await transaction.commit();  // Confirmar la transacción
+          return { person, user };      // Retornar ambos objetos
+        } catch (error) {
+          await transaction.rollback();  // Revertir la transacción en caso de error
+          console.error('Error al crear usuario y persona:', error.message);
+          // En lugar de sobrescribir el mensaje, propaga el mensaje completo del error
+          throw new Error(`Error al crear usuario y persona: ${error.message}`);
         }
       }
       

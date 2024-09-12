@@ -9,14 +9,18 @@ const { sendOTP } = require('../mailer');
 const otpStore = {}; // Guarda el OTP para el usuario temporalmente
 
 // Registro de usuario
+
 const register = async (req, res) => {
   try {
     const { person, user } = await personService.create(req.body);
     res.status(201).json({ success: true, data: { person, user } });
   } catch (error) {
+    // Enviar el mensaje exacto del error que ocurrió
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+
 
 // Login de usuario y envío de OTP
 const login = async (req, res) => {
