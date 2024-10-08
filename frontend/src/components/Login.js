@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'; 
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -14,8 +14,20 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:3000/api/v1/auth/login', form);
-      navigate('/verify-otp', { state: { cedula: form.cedula } });
+      // Realiza la petición de login al backend
+      const response = await axios.post('http://localhost:3000/api/v1/auth/login', form);
+
+      // Guarda el token en el localStorage
+      localStorage.setItem('token', response.data.token);
+
+      // Verificar las credenciales directamente
+      if (form.cedula === '1750691111' && form.password === 'adminadmin') {
+        // Redirigir a la página de verificación OTP para el administrador
+        navigate('/verify-otp', { state: { role: 'admin', isAdmin: true } });
+      } else {
+        // Para cualquier otra credencial, redirigir a la página de verificación OTP para el usuario
+        navigate('/verify-otp', { state: { role: 'user', isAdmin: false } });
+      }
     } catch (error) {
       console.error(error);
       setError('Error en el login');
