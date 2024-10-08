@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import '../estilos/inicio.css'; // Archivo de estilos para la página de inicio
+import '../estilos/inicio.css';
 
 const InicioAdmin = () => {
   const navigate = useNavigate();

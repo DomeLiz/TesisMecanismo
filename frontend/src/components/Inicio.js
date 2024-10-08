@@ -19,7 +19,7 @@ const Inicio = () => {
         <ul>
           <li><button onClick={() => navigate('/inicio')}>Inicio</button></li>
           <li><button onClick={() => navigate('/datos')}>Datos</button></li>
-          <li><button onClick={() => navigate('/asignacion')}>Asignación de Custodio</button></li>
+          <li><button onClick={() => navigate('/asignacion-custodio')}>Asignación de Custodio</button></li>
           <li><button onClick={handleLogout}>Cerrar sesión</button></li>
         </ul>
       </nav>
