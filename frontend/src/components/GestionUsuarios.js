@@ -49,9 +49,9 @@ const GestionUsuarios = () => {
       <nav className="menu-lateral">
         <h2>Menú</h2>
         <ul>
-          <li><button onClick={() => navigate('/inicio')}>Inicio</button></li>
-          <li><button onClick={() => navigate('/datos')}>Datos</button></li>
-          <li><button onClick={() => navigate('/asignacion-custodio')}>Asignación de Custodio</button></li>
+          <li><button onClick={() => navigate('/inicio-admin')}>Inicio</button></li>
+          <li><button onClick={() => navigate('/gestion-usuario')}>Gestión de usuarios</button></li>
+          <li><button onClick={() => navigate('/auditoria')}>Registro de auditoria</button></li>
           <li><button onClick={handleLogout}>Cerrar sesión</button></li>
         </ul>
       </nav>
