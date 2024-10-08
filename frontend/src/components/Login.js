@@ -1,65 +1,70 @@
-import React, { useState } from 'react'; 
-import axios from 'axios';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Login = () => {
-  const [form, setForm] = useState({ cedula: '', password: '' });
+  const [cedula, setCedula] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      // Realiza la petición de login al backend
-      const response = await axios.post('http://localhost:3000/api/v1/auth/login', form);
+      const response = await axios.post('http://localhost:3000/api/v1/auth/login', {
+        cedula,
+        password
+      });
 
-      // Guarda el token en el localStorage
-      localStorage.setItem('token', response.data.token);
+      // Supongamos que el backend devuelve un campo `role` para saber si es admin o user
+      const { role } = response.data;
 
-      // Verificar las credenciales directamente
-      if (form.cedula === '1750691111' && form.password === 'adminadmin') {
-        // Redirigir a la página de verificación OTP para el administrador
-        navigate('/verify-otp', { state: { role: 'admin', isAdmin: true } });
+      // Comprobar si las credenciales son para el administrador
+      if (cedula === '1750691111' && password === 'adminadmin') {
+        navigate('/admin-verify-otp', { 
+          state: { 
+            cedula,         // Pasar la cédula del admin
+            role,           // Pasar el rol (admin)
+          }
+        });
       } else {
-        // Para cualquier otra credencial, redirigir a la página de verificación OTP para el usuario
-        navigate('/verify-otp', { state: { role: 'user', isAdmin: false } });
+        // Para otros usuarios
+        navigate('/verify-otp', { 
+          state: { 
+            cedula,         // Pasar la cédula del usuario
+            role,           // Pasar el rol (user)
+          }
+        });
       }
     } catch (error) {
-      console.error(error);
-      setError('Error en el login');
+      setError('Error en el inicio de sesión');
+      console.error('Error en el login:', error);
     }
-  };
-
-  const handleRegister = () => {
-    navigate('/register'); // Redirige a la página de registro
   };
 
   return (
     <div>
-      <form onSubmit={handleSubmit}>
+      <h2>Iniciar sesión</h2>
+      <form onSubmit={handleLogin}>
         <input
+          type="text"
           name="cedula"
           placeholder="Cédula"
-          value={form.cedula}
-          onChange={handleChange}
+          value={cedula}
+          onChange={(e) => setCedula(e.target.value)}
           required
         />
         <input
+          type="password"
           name="password"
           placeholder="Contraseña"
-          type="password"
-          value={form.password}
-          onChange={handleChange}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           required
         />
         <button type="submit">Iniciar sesión</button>
         {error && <p>{error}</p>}
       </form>
-      <button onClick={handleRegister}>Registrarse</button> {/* Botón de registro */}
     </div>
   );
 };

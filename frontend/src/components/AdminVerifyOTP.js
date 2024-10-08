@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const VerifyOtp = () => {
+const AdminVerifyOTP = () => {
   const [otp, setOtp] = useState('');
   const [error, setError] = useState(null);
   const location = useLocation();
@@ -27,7 +27,7 @@ const VerifyOtp = () => {
 
       // Si la verificación es exitosa
       if (response.data.success) {
-        navigate('/inicio'); // Redirigir a la página de inicio del usuario
+        navigate('/inicio-admin'); // Redirigir a la página de inicio del administrador
       } else {
         setError('OTP incorrecto');
       }
@@ -66,4 +66,4 @@ const VerifyOtp = () => {
   );
 };
 
-export default VerifyOtp;
+export default AdminVerifyOTP;
