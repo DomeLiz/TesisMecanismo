@@ -14,7 +14,7 @@ const VerifyOTP = () => {
     try {
       const response = await axios.post('http://localhost:3000/api/v1/auth/verify-otp', { cedula, otp });
       localStorage.setItem('token', response.data.token);
-      navigate('/persons');
+      navigate('/inicio');
     } catch (error) {
       console.error(error);
       setError('Error en la verificación del OTP');

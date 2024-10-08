@@ -1,70 +1,34 @@
-import React, { useState } from 'react'; 
-import axios from 'axios';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../estilos/inicio.css';
 
-const Login = () => {
-  const [form, setForm] = useState({ cedula: '', password: '' });
-  const [error, setError] = useState(null);
+const Inicio = () => {
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      // Verificar las credenciales para determinar el rol
-      if (form.cedula === '1750691111' && form.password === 'adminadmin') {
-        // Guarda el token en el localStorage (suponiendo que tu backend retorna un token)
-        localStorage.setItem('token', 'fake-token-for-admin'); // Sustituye con el token real si lo tienes
-
-        // Redirigir a la página de verificación OTP
-        navigate('/verify-otp', { state: { isAdmin: true } }); // Indicar que es un admin
-      } else {
-        // Realiza la petición de login al backend para otros usuarios
-        const response = await axios.post('http://localhost:3000/api/v1/auth/login', form);
-
-        // Guarda el token en el localStorage (suponiendo que tu backend retorna un token)
-        localStorage.setItem('token', response.data.token);
-
-        // Redirigir a la página de verificación OTP
-        navigate('/verify-otp', { state: { isAdmin: false } }); // Indicar que no es un admin
-      }
-    } catch (error) {
-      console.error(error);
-      setError('Error en el login');
-    }
-  };
-
-  const handleRegister = () => {
-    navigate('/register'); // Redirige a la página de registro
+  const handleLogout = () => {
+    // Eliminar el token de localStorage
+    localStorage.removeItem('token');
+    // Redirigir al login
+    navigate('/login');
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
-        <input
-          name="cedula"
-          placeholder="Cédula"
-          value={form.cedula}
-          onChange={handleChange}
-          required
-        />
-        <input
-          name="password"
-          placeholder="Contraseña"
-          type="password"
-          value={form.password}
-          onChange={handleChange}
-          required
-        />
-        <button type="submit">Iniciar sesión</button>
-        {error && <p>{error}</p>}
-      </form>
-      <button onClick={handleRegister}>Registrarse</button> {/* Botón de registro */}
+    <div className="inicio-container">
+      <nav className="menu-lateral">
+        <h2>Menú</h2>
+        <ul>
+          <li><button onClick={() => navigate('/inicio')}>Inicio</button></li>
+          <li><button onClick={() => navigate('/datos')}>Datos</button></li>
+          <li><button onClick={() => navigate('/asignacion')}>Asignación de Custodio</button></li>
+          <li><button onClick={handleLogout}>Cerrar sesión</button></li>
+        </ul>
+      </nav>
+      <main className="contenido-principal">
+        <h1>Bienvenidos</h1>
+        <p>Esta es la página de inicio.</p>
+      </main>
     </div>
   );
 };
 
-export default Login;
+export default Inicio;
