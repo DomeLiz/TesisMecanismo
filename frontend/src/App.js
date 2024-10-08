@@ -5,6 +5,8 @@ import Register from './components/Register';
 import Login from './components/Login';
 import PersonsList from './components/PersonsList'; // Asegúrate de que esta línea esté presente
 import VerifyOTP from './components/VerifyOTP'; // Asegúrate de que esta línea esté presente
+import Inicio from './components/Inicio';
+import InicioAdmin from './components/InicioAdmin';
 
 
 function App() {
@@ -20,6 +22,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/verify-otp" element={<VerifyOTP />} />
           <Route path="/persons" element={<PersonsList />} />
+          <Route path="/inicio" element={<Inicio />} />
+          <Route path="/inicio-admin" element={<InicioAdmin />} />
         </Routes>
       </div>
     </Router>

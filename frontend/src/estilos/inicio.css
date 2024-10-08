@@ -1,0 +1,64 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html {
+  height: 100%;
+}
+
+.inicio-container {
+  display: flex;
+  height: 100vh; /* Asegura que el contenedor ocupe toda la altura de la ventana */
+}
+
+.menu-lateral {
+  width: 250px;
+  height: 100vh; /* Ocupa toda la altura de la pantalla */
+  background-color: #333;
+  color: #fff;
+  padding: 20px;
+  position: fixed; /* Mantiene el menú fijo a la izquierda */
+  top: 0;
+  left: 0;
+  overflow-y: auto; /* Añade scroll si hay muchos elementos en el menú */
+}
+
+.menu-lateral ul {
+  list-style: none;
+  padding: 0;
+}
+
+.menu-lateral li {
+  margin: 20px 0;
+}
+
+.menu-lateral a, .menu-lateral button {
+  color: #fff;
+  text-decoration: none;
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.menu-lateral a:hover, .menu-lateral button:hover {
+  color: #ccc;
+}
+
+.contenido-principal {
+  margin-left: 270px; /* Añade margen para que el contenido no esté detrás del menú */
+  padding: 20px;
+  width: calc(100% - 270px); /* Ajusta el ancho del contenido principal para que ocupe el espacio restante */
+  min-height: 100vh; /* Asegura que ocupe al menos toda la altura de la pantalla */
+  background-color: #f4f4f4;
+}
+
+h1 {
+  font-size: 32px;
+}
+
+p {
+  font-size: 18px;
+}
