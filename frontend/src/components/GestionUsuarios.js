@@ -46,10 +46,6 @@ const GestionUsuarios = () => {
     }
   };
 
-  const handleEdit = (person) => {
-    setEditingId(person.id);
-    setFormData(person);
-  };
 
   const handleUpdate = async () => {
     try {
@@ -103,8 +99,8 @@ const GestionUsuarios = () => {
         <ul>
           {persons.map(person => (
             <li key={person.id}>
-              {person.name} - {person.address} - {person.phone} - {person.email} - {person.cedula}
-              <button onClick={() => handleEdit(person)}>Editar</button>
+              {person.name}- {person.email} - {person.cedula}
+             
               <button onClick={() => handleDelete(person.id)}>Eliminar</button>
             </li>
           ))}
