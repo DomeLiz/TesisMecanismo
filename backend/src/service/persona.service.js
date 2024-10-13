@@ -82,45 +82,47 @@ class PersonService {
       }
 
       async create(data) {
-        const { name, address, phone, email, cedula, password } = data;
+        const { name, address, phone, email, cedula, password, custodianCedula = null } = data; // Desestructurar y permitir null
         const transaction = await sequelize.transaction();
         
         try {
-          // Verificar si ya existe una persona o usuario con la misma cédula
-          const existingUser = await models.User.findOne({ where: { cedula } });
-          if (existingUser) {
-            throw new Error('El usuario ya existe con esa cédula');
-          }
-      
-          // Insertar en la tabla persons
-          const person = await models.Person.create({
-            name,
-            address,
-            phone,
-            email,
-            cedula
-          }, { transaction });
-      
-          // Encriptar la contraseña
-          const hashedPassword = await bcrypt.hash(password, 10);
-      
-          // Insertar en la tabla users
-          const user = await models.User.create({
-            cedula,
-            password: hashedPassword,  // Almacenar la contraseña encriptada
-            personId: person.id  // Relacionar el registro con la persona creada
-          }, { transaction });
-      
-          await transaction.commit();  // Confirmar la transacción
-          return { person, user };      // Retornar ambos objetos
+            // Verificar si ya existe una persona o usuario con la misma cédula
+            const existingUser = await models.User.findOne({ where: { cedula } });
+            if (existingUser) {
+                throw new Error('El usuario ya existe con esa cédula');
+            }
+    
+            // Insertar en la tabla persons
+            const person = await models.Person.create({
+                name,
+                address,
+                phone,
+                email,
+                cedula,
+                custodianCedula // Agregar el custodio al crear la persona
+            }, { transaction });
+    
+            // Encriptar la contraseña
+            const hashedPassword = await bcrypt.hash(password, 10);
+    
+            // Insertar en la tabla users
+            const user = await models.User.create({
+                cedula,
+                password: hashedPassword,  // Almacenar la contraseña encriptada
+                personId: person.id  // Relacionar el registro con la persona creada
+            }, { transaction });
+    
+            await transaction.commit();  // Confirmar la transacción
+            return { person, user };      // Retornar ambos objetos
         } catch (error) {
-          await transaction.rollback();  // Revertir la transacción en caso de error
-          console.error('Error al crear usuario y persona:', error.message);
-          // En lugar de sobrescribir el mensaje, propaga el mensaje completo del error
-          throw new Error(`Error al crear usuario y persona: ${error.message}`);
+            await transaction.rollback();  // Revertir la transacción en caso de error
+            console.error('Error al crear usuario y persona:', error.message);
+            // En lugar de sobrescribir el mensaje, propaga el mensaje completo del error
+            throw new Error(`Error al crear usuario y persona: ${error.message}`);
         }
-      }
-      
+    }
+    
+    
 
     async update(id, data) {
         try {
@@ -145,6 +147,53 @@ class PersonService {
             throw new Error('Error al eliminar persona.');
         }
     }
+
+
+  async assignCustodian(personId, custodianId) {
+    try {
+        // Lógica para asignar el custodio a la persona
+        const person = await this.findByCedula(personId); // Busca la persona
+        person.custodianCedula = custodianId; // Asigna la cédula del custodio
+        await person.save(); // Guarda los cambios
+
+        console.log(`Asignando custodio con ID ${custodianId} a la persona con ID ${personId}`);
+        return { personId, custodianId }; // Retornar un objeto con la relación
+    } catch (error) {
+        console.error('Error al asignar custodio:', error.message);
+        throw new Error('Error al asignar custodio.');
+    }
+}
+async findCustodianByCedula(cedula) {
+  try {
+      // Buscar a la persona por cédula
+      const person = await models.Person.findOne({ where: { cedula } });
+
+      if (!person) {
+          throw new Error('No se encontró a la persona con la cédula proporcionada: ' + cedula);
+      }
+
+      // Verifica si la persona tiene un custodio asignado
+      if (!person.custodianCedula) {
+          throw new Error('No se encontró un custodio para esta persona: ' + cedula);
+      }
+
+      // Busca el custodio usando la cédula del custodio
+      const custodian = await models.Person.findOne({ where: { cedula: person.custodianCedula } });
+      if (!custodian) {
+          throw new Error('Custodio no encontrado para la cédula: ' + person.custodianCedula);
+      }
+
+      return custodian; // Devuelve la información del custodio
+  } catch (error) {
+      console.error('Error al buscar custodio:', error.message);
+      throw new Error('Error al buscar custodio: ' + error.message);
+  }
+}
+
+
+
+
+
 }
 
 module.exports = PersonService;

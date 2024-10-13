@@ -45,6 +45,10 @@ const PersonSchema = {
       type: DataTypes.STRING,
       unique: true, 
     },
+    custodianCedula: { // Nuevo campo para almacenar la cédula del custodio
+        allowNull: true,
+        type: DataTypes.STRING, // Almacena la cédula del custodio
+    }
 
 }
 

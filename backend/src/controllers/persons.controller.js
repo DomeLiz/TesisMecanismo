@@ -68,7 +68,51 @@ const _delete= async (req, res) => {
     }
 }
 
+const assignCustodian = async (req, res) => {
+    try {
+        const { personId, custodianId } = req.body;
+
+        // Verificar que no se asigna a sí mismo como custodio
+        if (personId === custodianId) {
+            return res.status(400).send({ success: false, message: 'No puedes asignarte a ti mismo como custodio.' });
+        }
+
+        // Lógica para asignar custodio (puedes guardar la relación en una tabla adicional si es necesario)
+        const response = await service.assignCustodian(personId, custodianId);
+        res.json({ success: true, data: response });
+    } catch (error) {
+        res.status(500).send({ success: false, message: error.message });
+    }
+};
+
+const getCustodian = async (req, res) => {
+    const cedula = req.params.cedula;
+
+    try {
+        const custodio = await service.findCustodianByCedula(cedula);
+        if (!custodio) {
+            return res.status(404).json({ message: 'No hay custodio asignado para esta persona.' });
+        }
+        res.json({
+            custodian: true,
+            custodianName: custodio.name,
+            custodianCedula: custodio.cedula,
+        });
+    } catch (error) {
+        console.error('Error en getCustodian:', error.message); // Agregar logging para depuración
+        res.status(500).json({ message: 'Error al obtener custodio: ' + error.message });
+    }
+};
+
+
 module.exports = {
-    create,get,getById, update, _delete,getByCedula
+    create,
+    get,
+    getById,
+    update,
+    _delete,
+    getByCedula,
+    assignCustodian, 
+    getCustodian 
 };
 
