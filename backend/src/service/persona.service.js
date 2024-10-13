@@ -29,17 +29,18 @@ class PersonService {
     }
 
     async findByCedula(cedula) {
-        try {
+      try {
           const person = await Person.findOne({ where: { cedula } });
           if (!person) {
-            throw new Error('Persona no encontrada');
+              throw new Error('Persona no encontrada');
           }
           return person;
-        } catch (error) {
-          console.error('Error al buscar persona por cédula:', error);
-          throw new Error('Error al buscar persona por cédula');
-        }
+      } catch (error) {
+          console.error('Error al buscar persona por cédula:', error.message);
+          throw new Error('Error al buscar persona.');
       }
+  }
+  
 
     async create1(data) {
         const { name, address, phone, email, cedula, password } = data;

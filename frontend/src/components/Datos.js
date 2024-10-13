@@ -1,73 +1,67 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Importar useNavigate
-
+import { useNavigate } from 'react-router-dom';
 
 const Datos = () => {
-  const [persons, setPersons] = useState([]);
-  const [error, setError] = useState(null);
-  const navigate = useNavigate(); // Inicializar useNavigate
+    const [personData, setPersonData] = useState(null);
+    const cedula = localStorage.getItem('cedula'); // Obtener la cédula desde localStorage
+    const token = localStorage.getItem('token'); // Obtener el token desde localStorage
+    const navigate = useNavigate(); // Usar useNavigate para la navegación
 
-  useEffect(() => {
-    const fetchPersons = async () => {
-      try {
-        const token = localStorage.getItem('token'); // Obtener el token del localStorage
-        const response = await axios.get('http://localhost:3000/api/v1/persons', {
-          headers: {
-            Authorization: `Bearer ${token}` // Incluir el token en los headers
-          }
-        });
-        setPersons(response.data);
-      } catch (error) {
-        if (error.response) {
-          // La solicitud fue realizada y el servidor respondió con un código de estado
-          // que está fuera del rango de 2xx
-          setError(`Error: ${error.response.status} - ${error.response.statusText}`);
-        } else if (error.request) {
-          // La solicitud fue realizada pero no se recibió respuesta
-          setError('Error: No se recibió respuesta del servidor.');
-        } else {
-          // Algo ocurrió al configurar la solicitud
-          setError(`Error: ${error.message}`);
+    useEffect(() => {
+        const fetchPersonData = async () => {
+            try {
+                const response = await axios.get(`http://localhost:3000/api/v1/persons/cedula/${cedula}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                setPersonData(response.data);
+            } catch (error) {
+                console.error('Error al obtener los datos de la persona:', error);
+            }
+        };
+
+        if (cedula) {
+            fetchPersonData();
         }
-        console.error(error);
-      }
+    }, [cedula, token]);
+
+    const handleLogout = () => {
+        // Eliminar el token y cédula de localStorage
+        localStorage.removeItem('token');
+        localStorage.removeItem('cedula');
+        // Redirigir al login
+        navigate('/login');
     };
 
-    fetchPersons();
-  }, []);
-
-  const handleLogout = () => {
-    // Elimina el token del almacenamiento local
-    localStorage.removeItem('token');
-    // Redirige al usuario a la página de login
-    navigate('/login');
-  };
-
-  return (
-    <div className="inicio-container">
-      <nav className="menu-lateral">
-        <h2>Menú</h2>
-        <ul>
-          <li><button onClick={() => navigate('/inicio')}>Inicio</button></li>
-          <li><button onClick={() => navigate('/datos')}>Datos</button></li>
-          <li><button onClick={() => navigate('/asignacion-custodio')}>Asignación de Custodio</button></li>
-          <li><button onClick={handleLogout}>Cerrar sesión</button></li>
-        </ul>
-      </nav>
-      <main className="contenido-principal">
-        <h2>Lista de Personas</h2>
-        {error && <p>{error}</p>}
-        <ul>
-          {persons.map(person => (
-            <li key={person.id}>
-              {person.name} - {person.address} - {person.phone}
-            </li>
-          ))}
-        </ul>
-      </main>
-    </div>
-  );
+    return (
+        <div className="datos-container">
+            <nav className="menu-lateral">
+                <h2>Menú</h2>
+                <ul>
+                <li><button onClick={() => navigate('/inicio')}>Inicio</button></li>
+                <li><button onClick={() => navigate('/datos')}>Datos</button></li>
+                <li><button onClick={() => navigate('/asignacion-custodio')}>Asignación de Custodio</button></li>
+                <li><button onClick={handleLogout}>Cerrar sesión</button></li>
+                </ul>
+            </nav>
+            <main className="contenido-principal">
+                <h1>Datos de la Persona</h1>
+                {personData ? (
+                    <div>
+                        <p><strong>Nombre:</strong> {personData.name}</p>
+                        <p><strong>Dirección:</strong> {personData.address}</p>
+                        <p><strong>Teléfono:</strong> {personData.phone}</p>
+                        <p><strong>Correo:</strong> {personData.email}</p>
+                        <p><strong>Cédula:</strong> {personData.cedula}</p>
+                    </div>
+                ) : (
+                    <p>Cargando datos...</p>
+                )}
+            </main>
+        </div>
+    );
 };
 
 export default Datos;

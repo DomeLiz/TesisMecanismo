@@ -30,6 +30,23 @@ const getById = async (req, res) => {
     }
 }
 
+const getByCedula = async (req, res) => {
+    try {
+        const { cedula } = req.params; // Asegúrate de que estás obteniendo la cédula de los parámetros
+        if (!cedula) {
+            return res.status(400).send({ success: false, message: 'Cédula es requerida.' });
+        }
+
+        const response = await service.findByCedula(cedula); // Llama al método correcto
+        res.json(response); // Devuelve la respuesta
+    } catch (error) {
+        console.error('Error en getByCedula:', error.message); // Mensaje de error más detallado
+        res.status(500).send({ success: false, message: error.message });
+    }
+}
+
+
+
 const update= async (req, res) => {
     try {
         const { id } = req.params;
@@ -52,6 +69,6 @@ const _delete= async (req, res) => {
 }
 
 module.exports = {
-    create,get,getById, update, _delete
+    create,get,getById, update, _delete,getByCedula
 };
 

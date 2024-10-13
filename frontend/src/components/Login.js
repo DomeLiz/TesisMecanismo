@@ -17,7 +17,11 @@ const Login = () => {
       });
 
       // Supongamos que el backend devuelve un campo `role` para saber si es admin o user
-      const { role } = response.data;
+      const { role, token } = response.data;
+
+      // Almacenar el token y la cédula en localStorage
+      localStorage.setItem('token', token);
+      localStorage.setItem('cedula', cedula);
 
       // Comprobar si las credenciales son para el administrador
       if (cedula === '1750691111' && password === 'adminadmin') {

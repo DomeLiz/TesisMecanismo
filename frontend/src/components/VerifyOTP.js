@@ -19,7 +19,6 @@ const VerifyOtp = () => {
     e.preventDefault();
     setError(null);  // Limpiar el error anterior al enviar el formulario
     try {
-      // Solicitud al backend para verificar el OTP
       const response = await axios.post('http://localhost:3000/api/v1/auth/verify-otp', {
         otp,         // Enviar el OTP ingresado
         cedula       // Enviar la cédula que fue pasada desde el login
