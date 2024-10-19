@@ -10,6 +10,7 @@ router
     .put('/:id', personsController.update)
     .delete('/:id', personsController._delete)
     .post('/assign-custodian', personsController.assignCustodian)
-    .get('/:cedula/custodian', personsController.getCustodian);
+    .get('/:cedula/custodian', personsController.getCustodian)
+    .delete('/custodian/:cedula', personsController.removeCustodian);
 
 module.exports = router;

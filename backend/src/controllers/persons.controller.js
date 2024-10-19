@@ -104,6 +104,17 @@ const getCustodian = async (req, res) => {
     }
 };
 
+const removeCustodian = async (req, res) => {
+    try {
+        const { cedula } = req.params;
+        // Llamar al servicio para eliminar el custodio
+        const response = await service.removeCustodian(cedula);
+        res.json({ success: true, message: 'Custodio eliminado exitosamente', data: response });
+    } catch (error) {
+        res.status(500).send({ success: false, message: error.message });
+    }
+};
+
 
 module.exports = {
     create,
@@ -113,6 +124,7 @@ module.exports = {
     _delete,
     getByCedula,
     assignCustodian, 
-    getCustodian 
+    getCustodian,
+    removeCustodian
 };
 

@@ -190,7 +190,27 @@ async findCustodianByCedula(cedula) {
   }
 }
 
+async removeCustodian(cedula) {
+    try {
+        console.log('Eliminando custodio para la persona con cédula:', cedula);
+        // Buscar a la persona por cédula
+        const person = await this.findByCedula(cedula);
 
+        if (!person) {
+            throw new Error('Persona no encontrada con esa cédula.');
+        }
+
+        // Establecer el campo custodianCedula a null para eliminar la asignación
+        person.custodianCedula = null;
+        await person.save();
+
+        console.log(`Custodio eliminado para la persona con cédula ${cedula}`);
+        return person;
+    } catch (error) {
+        console.error('Error al eliminar custodio:', error.message);
+        throw new Error('Error al eliminar custodio.');
+    }
+}
 
 
 
