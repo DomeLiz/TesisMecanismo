@@ -47,7 +47,7 @@ const AsignacionCustodio = () => {
             if (response.data.custodian) {
                 setNombreCustodio(response.data.custodianName);
                 setCedulaCustodio(response.data.custodianCedula);
-                setMensajeAsignacion(`Este usuario  tiene como custodio a (${response.data.custodianName} - ${response.data.custodianCedula})`);
+                setMensajeAsignacion(`Este usuario tiene como custodio a (${response.data.custodianName} - ${response.data.custodianCedula})`);
             } else {
                 setMensajeAsignacion('No hay custodio asignado para este usuario.');
             }
@@ -57,33 +57,58 @@ const AsignacionCustodio = () => {
         }
     };
 
-    const handleAssignCustodian = async (e) => {
-        e.preventDefault();
-        setError(null);
-
-        try {
-            const response = await axios.post('http://localhost:3000/api/v1/persons/assign-custodian', {
-                personId: cedulaAsignador,
-                custodianId: cedulaCustodio,
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            if (response.data.success) {
-                await obtenerDatosUsuario(cedulaCustodio, setNombreCustodio);
-                setMensajeAsignacion(`Este usuario tiene como custodio a (${nombreCustodio} - ${cedulaCustodio})`);
-                alert('Custodio asignado exitosamente');
-                navigate('/inicio');
-            } else {
-                setError(response.data.message);
+        // Maneja la asignación de un nuevo custodio
+        const handleAssignCustodian = async (e) => {
+            e.preventDefault();
+            setError(null); // Resetea el error antes de iniciar
+    
+            if (!cedulaCustodio.trim()) {
+                setError('Por favor, ingrese la cédula del custodio.');
+                return;
             }
-        } catch (error) {
-            setError('Error al asignar custodio');
-            console.error('Error en la asignación de custodio:', error);
-        }
-    };
+    
+            // Verificar si el custodio existe antes de asignarlo
+            try {
+                const custodianResponse = await axios.get(`http://localhost:3000/api/v1/persons/cedula/${cedulaCustodio}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+    
+                // Si no se encuentra el custodio, mostrar un mensaje de error
+                if (!custodianResponse.data) {
+                    setError('Custodio no encontrado en la base de datos.');
+                    return;
+                }
+            } catch (error) {
+                setError('Error al verificar el custodio en la base de datos.');
+                console.error('Error al verificar custodio:', error);
+                return;
+            }
+    
+            // Si el custodio existe, proceder a asignarlo
+            try {
+                const response = await axios.post('http://localhost:3000/api/v1/persons/assign-custodian', {
+                    personId: cedulaAsignador,
+                    custodianId: cedulaCustodio,
+                }, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+    
+                if (response.data.success) {
+                    setMensajeAsignacion(`Custodio (${nombreCustodio} - ${cedulaCustodio}) asignado exitosamente.`);
+                    alert('Custodio asignado exitosamente');
+                    navigate('/inicio');
+                } else {
+                    setError(response.data.message);
+                }
+            } catch (error) {
+                setError('Error al asignar custodio');
+                console.error('Error en la asignación de custodio:', error);
+            }
+        };
 
     const handleRemoveCustodian = async () => {
         // Verificar si se ha asignado un custodio
