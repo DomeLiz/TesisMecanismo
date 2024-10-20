@@ -30,9 +30,7 @@ const DatosCustodiados = () => {
                         Authorization: `Bearer ${token}`
                     }
                 });
-                console.log('Respuesta del backend:', response.data); // Verifica los datos que llegan
 
-                // Acceder a los datos correctamente
                 if (response.data && response.data.success) {
                     setCustodiados(response.data.custodians || []); // Accedemos a custodians correctamente
                 } else {
@@ -71,11 +69,13 @@ const DatosCustodiados = () => {
                 <h1>Datos de la Persona</h1>
                 {personData ? (
                     <div>
+                        <br></br>
                         <p><strong>Nombre:</strong> {personData.name}</p>
                         <p><strong>Dirección:</strong> {personData.address}</p>
                         <p><strong>Teléfono:</strong> {personData.phone}</p>
                         <p><strong>Correo:</strong> {personData.email}</p>
                         <p><strong>Cédula:</strong> {personData.cedula}</p>
+                        <br></br>
                     </div>
                 ) : (
                     <p>Cargando datos...</p>
@@ -84,9 +84,16 @@ const DatosCustodiados = () => {
                 <h2>Custodiados</h2>
                 {custodiados.length > 0 ? (
                     custodiados.map(custodiado => (
-                        <p key={custodiado.cedula}>
-                            Usted es custodio de: <strong>{custodiado.name}</strong> (Cédula: {custodiado.cedula})
-                        </p>
+                        <div key={custodiado.cedula} className="custodiado-datos">
+                            <br></br>
+                            <p><strong>Nombre:</strong> {custodiado.name}</p>
+                            <p><strong>Dirección:</strong> {custodiado.address}</p>
+                            <p><strong>Teléfono:</strong> {custodiado.phone}</p>
+                            <p><strong>Correo:</strong> {custodiado.email}</p>
+                            <p><strong>Cédula:</strong> {custodiado.cedula}</p>
+                            <p><strong>Asignado por el custodio:</strong> {custodiado.custodianCedula}</p>
+                            <br></br>
+                        </div>
                     ))
                 ) : (
                     <p>Usted no es custodio de ningún usuario.</p>
