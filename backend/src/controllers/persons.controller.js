@@ -104,6 +104,7 @@ const getCustodian = async (req, res) => {
     }
 };
 
+
 const removeCustodian = async (req, res) => {
     try {
         const { cedula } = req.params;
@@ -115,6 +116,23 @@ const removeCustodian = async (req, res) => {
     }
 };
 
+const getCustodiados = async (req, res) => {
+    const { custodianCedula } = req.params;
+
+    try {
+        const custodians = await service.findCustodiadosByCustodianCedula(custodianCedula); // Asegúrate de que este método esté implementado en tu servicio
+        if (!custodians || custodians.length === 0) {
+            return res.status(404).json({ success: false, message: 'No se encontraron personas que tengan asignado este custodio.' });
+        }
+        res.json({ success: true, custodians });
+    } catch (error) {
+        console.error('Error en getCustodiados:', error.message);
+        res.status(500).json({ success: false, message: 'Error al obtener los custodiados: ' + error.message });
+    }
+};
+
+
+
 
 module.exports = {
     create,
@@ -125,6 +143,7 @@ module.exports = {
     getByCedula,
     assignCustodian, 
     getCustodian,
-    removeCustodian
+    removeCustodian,
+    getCustodiados
 };
 

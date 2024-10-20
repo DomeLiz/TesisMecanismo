@@ -212,6 +212,21 @@ async removeCustodian(cedula) {
     }
 }
 
+async findCustodiadosByCustodianCedula(custodianCedula) {
+    try {
+        // Busca las personas que tengan asignado al custodio
+        const custodians = await models.Person.findAll({ where: { custodianCedula } });
+
+        if (!custodians || custodians.length === 0) {
+            throw new Error('No se encontraron personas que tengan asignado este custodio.');
+        }
+
+        return custodians; // Devuelve la lista de custodios
+    } catch (error) {
+        console.error('Error al buscar custodiados por cédula de custodio:', error.message);
+        throw new Error('Error al buscar custodiados.');
+    }
+}
 
 
 }
