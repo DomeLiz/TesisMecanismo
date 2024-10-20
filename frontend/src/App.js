@@ -13,6 +13,7 @@ import AsignacionCustodio from './components/AsignacionCustodio';
 import Datos from './components/Datos';
 import AdminVerifyOTP from './components/AdminVerifyOTP';
 import DatosCustodiados from './components/DatosCustodiados';
+import EditarDatosCustodiados from './components/EditarDatosCustodiados';
 
 function App() {
   return (
@@ -34,7 +35,9 @@ function App() {
           <Route path="/auditoria" element={<Auditoria />} />
           <Route path="/inicio-admin" element={<InicioAdmin />} />
           <Route path="/admin-verify-otp" element={<AdminVerifyOTP />} />
-          <Route path="/datos-custodiados" element={<DatosCustodiados />} />        </Routes>
+          <Route path="/datos-custodiados" element={<DatosCustodiados />} />
+          <Route path="/editar-datos-custodiados" element={<EditarDatosCustodiados />} />     
+        </Routes>
       </div>
     </Router>
   );

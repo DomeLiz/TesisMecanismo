@@ -7,7 +7,7 @@ router
     .get('/:id', personsController.getById)
     .get('/cedula/:cedula', personsController.getByCedula)
     .post('/', personsController.create)
-    .put('/:id', personsController.update)
+    .put('/cedula/:cedula', personsController.update)
     .delete('/:id', personsController._delete)
     .post('/assign-custodian', personsController.assignCustodian)
     .get('/:cedula/custodian', personsController.getCustodian)

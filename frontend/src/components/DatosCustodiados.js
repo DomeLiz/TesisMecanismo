@@ -53,6 +53,11 @@ const DatosCustodiados = () => {
         navigate('/login');
     };
 
+    const handleEditClick = (custodiado) => {
+        // Navegar a la página de edición, pasando los datos del custodiado
+        navigate('/editar-datos-custodiados', { state: { custodiado } });
+    };
+
     return (
         <div className="datos-container">
             <nav className="menu-lateral">
@@ -92,6 +97,8 @@ const DatosCustodiados = () => {
                             <p><strong>Correo:</strong> {custodiado.email}</p>
                             <p><strong>Cédula:</strong> {custodiado.cedula}</p>
                             <p><strong>Asignado por el custodio:</strong> {custodiado.custodianCedula}</p>
+   
+                             <button onClick={() => handleEditClick(custodiado)}>Editar Datos</button>
                             <br></br>
                         </div>
                     ))

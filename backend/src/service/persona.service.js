@@ -124,10 +124,10 @@ class PersonService {
     
     
 
-    async update(id, data) {
+    async update(cedula, data) {
         try {
-            console.log('Actualizando persona con ID:', id, 'Datos:', data);
-            const model = await this.findOne(id);
+            console.log('Actualizando persona con cédula:', cedula, 'Datos:', data);
+            const model = await this.findByCedula(cedula); // Busca por cédula
             const res = await model.update(data);
             return res;
         } catch (error) {
@@ -135,6 +135,7 @@ class PersonService {
             throw new Error('Error al actualizar persona.');
         }
     }
+    
 
     async delete(id) {
         try {

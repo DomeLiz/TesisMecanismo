@@ -47,16 +47,16 @@ const getByCedula = async (req, res) => {
 
 
 
-const update= async (req, res) => {
+const update = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { cedula } = req.params; // Cambia de id a cedula
         const body = req.body;
-        const response = await service.update(id, body);
+        const response = await service.update(cedula, body); // Usa cedula aquí
         res.json(response);
-    } catch ( error) {
-        res.status(500).send({ success: false, message: error.message});
+    } catch (error) {
+        res.status(500).send({ success: false, message: error.message });
     }
-}
+};
 
 const _delete= async (req, res) => {
     try {
