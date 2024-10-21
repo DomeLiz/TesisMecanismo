@@ -46,7 +46,6 @@ const getByCedula = async (req, res) => {
 }
 
 
-
 const update = async (req, res) => {
     try {
         const { cedula } = req.params; // Cambia de id a cedula

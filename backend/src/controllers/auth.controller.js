@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const PersonsService = require('../service/persona.service');
 const personService = new PersonsService();
 const otpGenerator = require('otp-generator');
-const { sendOTP } = require('../mailer');
+const { sendOTP, sendLoginFailEmail } = require('../mailer');
 
 const otpStore = {}; // Guarda el OTP para el usuario temporalmente
 
@@ -29,15 +29,22 @@ const login = async (req, res) => {
     const user = await userservice.findByCedula(cedula);
 
     if (!user) {
+      // Intento de login fallido: usuario no encontrado
+      await sendLoginFailEmail(cedula, 'Usuario no encontrado');
       return res.status(400).json({ success: false, message: 'Usuario no encontrado' });
     }
 
     const validPassword = await userservice.validatePassword(password, user.password);
     if (!validPassword) {
+      // Intento de login fallido: contraseña incorrecta
+      const person = await personService.findByCedula(cedula);
+      if (person && person.email) {
+        await sendLoginFailEmail(person.email, 'Contraseña incorrecta');
+      }
       return res.status(400).json({ success: false, message: 'Contraseña incorrecta' });
     }
 
-    // Obtener el correo de la tabla persons
+    // Continuación del proceso si login es correcto...
     const person = await personService.findByCedula(cedula);
     const email = person ? person.email : null;
 
@@ -45,11 +52,9 @@ const login = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Correo electrónico no encontrado' });
     }
 
-    // Generar OTP
     const otp = otpGenerator.generate(6, { digits: true });
-    otpStore[cedula] = otp; // Almacena OTP en memoria temporalmente
+    otpStore[cedula] = otp;
 
-    // Enviar OTP por correo
     await sendOTP(email, otp);
 
     res.json({ success: true, message: 'OTP enviado al correo' });
@@ -57,6 +62,8 @@ const login = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+
 
 // Verificar OTP
 const verifyOTP = (req, res) => {
