@@ -51,6 +51,29 @@ const sendLoginFailEmail = async (to, reason) => {
   }
 };
 
+// Método para enviar correo de OTP incorrecto
+const sendOtpFailEmail = async (to, cedula) => {
+  try {
+    const currentDate = new Date();
+    const formattedDate = currentDate.toLocaleDateString();
+    const formattedTime = currentDate.toLocaleTimeString();
+
+    console.log(`Intento fallido de verificación de OTP. Fecha: ${formattedDate}, Hora: ${formattedTime}, Cédula: ${cedula}`);
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to,
+      subject: 'Intento fallido de verificación de OTP',
+      text: `Hubo un intento fallido de verificación de OTP en tu cuenta.\nCédula: ${cedula}\nFecha: ${formattedDate}\nHora: ${formattedTime}`,
+    });
+
+    console.log('Correo de intento fallido de verificación de OTP enviado correctamente');
+  } catch (error) {
+    console.error('Error al enviar el correo de intento fallido de OTP:', error);
+    throw new Error('Error al enviar el correo de intento fallido de OTP');
+  }
+};
 
 
-module.exports = { sendOTP, sendLoginFailEmail };
+
+module.exports = { sendOTP, sendLoginFailEmail, sendOtpFailEmail };

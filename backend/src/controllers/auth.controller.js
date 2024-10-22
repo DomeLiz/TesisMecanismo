@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const PersonsService = require('../service/persona.service');
 const personService = new PersonsService();
 const otpGenerator = require('otp-generator');
-const { sendOTP, sendLoginFailEmail } = require('../mailer');
+const { sendOTP, sendLoginFailEmail,sendOtpFailEmail } = require('../mailer');
 
 const otpStore = {}; // Guarda el OTP para el usuario temporalmente
 
@@ -66,7 +66,7 @@ const login = async (req, res) => {
 
 
 // Verificar OTP
-const verifyOTP = (req, res) => {
+const verifyOTP1 = (req, res) => {
   const { cedula, otp } = req.body;
 
   if (otpStore[cedula] === otp) {
@@ -76,6 +76,26 @@ const verifyOTP = (req, res) => {
     const token = jwt.sign({ cedula }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.json({ success: true, token });
   } else {
+    res.status(400).json({ success: false, message: 'OTP incorrecto o expirado' });
+  }
+};
+
+const verifyOTP = async (req, res) => {
+  const { cedula, otp } = req.body;
+
+  // Verifica si el OTP es correcto
+  if (otpStore[cedula] === otp) {
+    delete otpStore[cedula]; // Eliminar OTP una vez verificado
+
+    // Generar JWT y devolverlo
+    const token = jwt.sign({ cedula }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.json({ success: true, token });
+  } else {
+    // Envía un correo si el OTP es incorrecto
+    const person = await personService.findByCedula(cedula);
+    if (person && person.email) {
+      await sendOtpFailEmail(person.email, cedula);
+    }
     res.status(400).json({ success: false, message: 'OTP incorrecto o expirado' });
   }
 };
