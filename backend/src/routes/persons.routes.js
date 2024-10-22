@@ -12,6 +12,9 @@ router
     .post('/assign-custodian', personsController.assignCustodian)
     .get('/:cedula/custodian', personsController.getCustodian)
     .delete('/custodian/:cedula', personsController.removeCustodian)
-    .get('/custodian/:custodianCedula/custodiados', personsController.getCustodiados);
+    .get('/custodian/:custodianCedula/custodiados', personsController.getCustodiados)
+    .post('/send-otp', personsController.sendOtp)
+    .post('/verify-otp', personsController.verifyOtp);
+
 
 module.exports = router;

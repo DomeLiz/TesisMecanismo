@@ -2,6 +2,46 @@
 const PersonsService = require('../service/persona.service');
 const service = new PersonsService();
 
+const { sendOTP } = require('../mailer');
+const otpStore = {};
+
+// Enviar OTP al correo
+const sendOtp = async (req, res) => {
+    const { email } = req.body;
+    const otp = Math.floor(100000 + Math.random() * 900000); // Generar un código OTP de 6 dígitos
+
+    try {
+        // Guardar el OTP temporalmente
+        otpStore[email] = otp;
+
+        // Enviar el OTP al correo
+        await sendOTP(email, otp);
+        res.json({ success: true, message: 'OTP enviado correctamente' });
+    } catch (error) {
+        console.error('Error al enviar OTP:', error);
+        res.status(500).json({ success: false, message: 'Error al enviar OTP' });
+    }
+};
+
+// Verificar OTP
+const verifyOtp = async (req, res) => {
+    const { email, otp } = req.body;
+
+    try {
+        if (otpStore[email] && otpStore[email] == otp) {
+            // OTP correcto, eliminar del almacenamiento temporal
+            delete otpStore[email];
+            res.json({ success: true, message: 'OTP verificado correctamente' });
+        } else {
+            res.status(400).json({ success: false, message: 'OTP incorrecto' });
+        }
+    } catch (error) {
+        console.error('Error al verificar OTP:', error);
+        res.status(500).json({ success: false, message: 'Error al verificar OTP' });
+    }
+};
+
+
 const create = async (req, res) => {
     try {
         const response = await service.create(req.body);
@@ -143,6 +183,8 @@ module.exports = {
     assignCustodian, 
     getCustodian,
     removeCustodian,
-    getCustodiados
+    getCustodiados,
+    sendOtp,
+    verifyOtp
 };
 
