@@ -63,23 +63,6 @@ const login = async (req, res) => {
   }
 };
 
-
-
-// Verificar OTP
-const verifyOTP1 = (req, res) => {
-  const { cedula, otp } = req.body;
-
-  if (otpStore[cedula] === otp) {
-    delete otpStore[cedula]; // Eliminar OTP una vez verificado
-
-    // Generar JWT y devolverlo
-    const token = jwt.sign({ cedula }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.json({ success: true, token });
-  } else {
-    res.status(400).json({ success: false, message: 'OTP incorrecto o expirado' });
-  }
-};
-
 const verifyOTP = async (req, res) => {
   const { cedula, otp } = req.body;
 
