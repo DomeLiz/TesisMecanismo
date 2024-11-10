@@ -85,6 +85,32 @@ class UsuarioService {
     }
   }
   
+  // Actualizar un usuario por cédula
+  async update(cedula, data) {
+    try {
+      console.log('Actualizando usuario con cédula:', cedula, 'Datos:', data);
+      const usuario = await this.findByCedula(cedula); // Buscar por cédula
+      const updatedUsuario = await usuario.update(data); // Actualiza los datos
+      return updatedUsuario;
+    } catch (error) {
+      console.error('Error en update:', error);
+      throw new Error('Error al actualizar usuario.');
+    }
+  }
+
+  // Eliminar un usuario por ID
+  async delete(id) {
+    try {
+      console.log('Eliminando usuario con ID:', id);
+      const usuario = await this.findOne(id); // Buscar por ID
+      await usuario.destroy(); // Eliminar el usuario
+      return { deleted: true }; // Retorna un objeto indicando que fue eliminado
+    } catch (error) {
+      console.error('Error en delete:', error);
+      throw new Error('Error al eliminar usuario.');
+    }
+  }
+  
 }
 
 

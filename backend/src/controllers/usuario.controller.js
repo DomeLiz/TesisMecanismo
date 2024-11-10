@@ -41,6 +41,29 @@ class UsuarioController {
       res.status(500).json({ message: error.message });
     }
   }
+
+  // Actualizar un usuario por cédula
+  async update(req, res) {
+    try {
+      const { cedula } = req.params; // Obtener la cédula de los parámetros de la ruta
+      const usuarioData = req.body; // Obtener los datos a actualizar desde el cuerpo de la solicitud
+      const updatedUsuario = await UsuarioService.update(cedula, usuarioData);
+      res.status(200).json(updatedUsuario);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
+  // Eliminar un usuario por ID
+  async delete(req, res) {
+    try {
+      const { id } = req.params; // Obtener el ID de los parámetros de la ruta
+      await UsuarioService.delete(id);
+      res.status(200).json({ message: 'Usuario eliminado correctamente' });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
 }
 
 module.exports = new UsuarioController();

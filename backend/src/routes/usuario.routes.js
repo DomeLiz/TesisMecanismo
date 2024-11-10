@@ -6,6 +6,8 @@ router
     .post('/register', UsuarioController.crearUsuario)
     .get('/', UsuarioController.find)
     .get('/:id', UsuarioController.findOne)
-    .get('/cedula/:cedula', UsuarioController.findByCedula);
+    .get('/cedula/:cedula', UsuarioController.findByCedula)
+    .put('/cedula/:cedula', UsuarioController.update)
+    .delete('/:id', UsuarioController.delete);
 
 module.exports = router;
