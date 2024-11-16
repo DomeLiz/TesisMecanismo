@@ -69,7 +69,7 @@ const UsuarioSchema = {
   },
   rol: {
     type: DataTypes.STRING(300),
-    allowNull: false,
+    allowNull: true,
   },
   nivel_confidencialidad: {
     type: DataTypes.STRING(300),

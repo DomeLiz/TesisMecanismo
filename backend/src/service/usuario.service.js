@@ -197,6 +197,43 @@ class UsuarioService {
     }
   }
   
+  async eliminarCustodio(personaId) {
+    try {
+      // Buscar la persona por su ID
+      const persona = await models.Usuario.findByPk(personaId);
+      if (!persona) {
+        throw new Error('La persona no existe en la base de datos');
+      }
+
+      // Verificar si la persona tiene un custodio asignado
+      if (!persona.idcustodio) {
+        throw new Error('Este usuario no tiene un custodio asignado');
+      }
+
+      // Buscar al custodio usando el idcustodio
+      const custodio = await models.Usuario.findByPk(persona.idcustodio);
+      if (!custodio) {
+        throw new Error('El custodio asignado no existe en la base de datos');
+      }
+
+      // Eliminar la referencia al custodio en el usuario
+      persona.idcustodio = null;
+      await persona.save();
+
+      // Cambiar el rol del custodio o eliminarlo, dependiendo de lo que quieras hacer
+      custodio.rol = null;  // Cambiar el rol a usuario (puedes modificarlo según tu necesidad)
+      await custodio.save();
+
+      return {
+        message: 'Custodio eliminado correctamente',
+        personaActualizada: persona.toJSON(),
+        custodioActualizado: custodio.toJSON(),
+      };
+    } catch (error) {
+      console.error('Error en eliminarCustodio:', error);
+      throw new Error(error.message || 'Error al eliminar el custodio');
+    }
+  }
   
 
   
