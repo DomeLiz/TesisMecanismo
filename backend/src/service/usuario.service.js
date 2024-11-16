@@ -110,6 +110,64 @@ class UsuarioService {
       throw new Error('Error al eliminar usuario.');
     }
   }
+
+
+
+  // Métodos auxiliares de búsqueda por cédula e ID (ya explicados en el mensaje anterior)
+  async findByCedula(cedula) {
+    try {
+      const usuario = await Usuario.findOne({ where: { cedula } });
+      if (!usuario) throw new Error('Usuario no encontrado');
+      return usuario;
+    } catch (error) {
+      throw new Error('Error al buscar usuario por cédula');
+    }
+  }
+
+  async findOne(id) {
+    try {
+      const usuario = await Usuario.findByPk(id);
+      if (!usuario) throw new Error('Usuario no encontrado');
+      return usuario;
+    } catch (error) {
+      throw new Error('Error al buscar usuario por ID');
+    }
+  }
+
+
+  async assignCustodian(personaId, custodioId) {
+    try {
+      if (personaId === custodioId) {
+        throw new Error('El usuario no puede asignarse como su propio custodio');
+      }
+
+      // Buscar la persona por su ID
+      const persona = await models.Usuario.findByPk(personaId);
+      if (!persona) throw new Error('La persona asignada no existe en la base de datos');
+
+      // Verificar si el custodio existe
+      const custodio = await models.Usuario.findByPk(custodioId);
+      if (!custodio) throw new Error('El custodio asignado no existe en la base de datos');
+
+      // Actualizar el campo idcustodio de la persona
+      persona.idcustodio = custodioId;
+      await persona.save();
+
+      // Cambiar el rol del custodio a "custodio"
+      custodio.rol = 'custodio';
+      await custodio.save();
+
+      return {
+        message: 'Custodio asignado correctamente',
+        persona: persona.toJSON(),
+        custodio: custodio.toJSON(),
+      };
+    } catch (error) {
+      console.error('Error en assignCustodian:', error);
+      throw new Error(error.message || 'Error al asignar custodio');
+    }
+  }
+
   
 }
 

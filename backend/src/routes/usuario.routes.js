@@ -8,6 +8,6 @@ router
     .get('/:id', UsuarioController.findOne)
     .get('/cedula/:cedula', UsuarioController.findByCedula)
     .put('/cedula/:cedula', UsuarioController.update)
-    .delete('/:id', UsuarioController.delete);
-
+    .delete('/:id', UsuarioController.delete)
+    .post('/assign-custodian', UsuarioController.assignCustodian);
 module.exports = router;
