@@ -234,8 +234,26 @@ class UsuarioService {
       throw new Error(error.message || 'Error al eliminar el custodio');
     }
   }
-  
 
+  async obtenerCustodiadosPorId(idCustodio) {
+    try {
+      // Buscar todos los usuarios que tienen asignado el custodio con el id proporcionado
+      const custodiados = await models.Usuario.findAll({
+        where: { idcustodio: idCustodio }, // Filtramos por el idcustodio
+      });
+
+      // Verificamos si hay custodiados
+      if (custodiados.length === 0) {
+        throw new Error('No hay usuarios custodiados por este custodio');
+      }
+
+      // Devolver los usuarios que son custodiados
+      return custodiados.map((usuario) => usuario.toJSON());
+    } catch (error) {
+      console.error('Error en obtenerCustodiadosPorId:', error);
+      throw new Error(error.message || 'Error al obtener los custodiados');
+    }
+  }
   
 }
 

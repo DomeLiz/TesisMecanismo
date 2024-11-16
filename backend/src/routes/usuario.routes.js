@@ -11,6 +11,8 @@ router
     .delete('/:id', UsuarioController.delete)
     .post('/assign-custodian', UsuarioController.assignCustodian)
     .get('/get-custodian/:personaId', UsuarioController.getCustodian)
-    .delete('/eliminar-custodio/:personaId', UsuarioController.eliminarCustodio);
+    .delete('/eliminar-custodio/:personaId', UsuarioController.eliminarCustodio)
+    .get('/custodiados/:idCustodio', UsuarioController.obtenerCustodiadosPorId);
+
     
     module.exports = router;

@@ -103,6 +103,19 @@ class UsuarioController {
       res.status(400).json({ message: error.message });
     }
   }
+
+  async obtenerCustodiadosPorId(req, res) {
+    try {
+      const { idCustodio } = req.params; // Recibimos el ID del custodio desde los parámetros de la URL
+
+      // Llamamos al servicio para obtener los custodiados
+      const result = await UsuarioService.obtenerCustodiadosPorId(idCustodio);
+
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
    
 }
 
