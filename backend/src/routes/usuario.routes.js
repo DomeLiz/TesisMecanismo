@@ -9,5 +9,7 @@ router
     .get('/cedula/:cedula', UsuarioController.findByCedula)
     .put('/cedula/:cedula', UsuarioController.update)
     .delete('/:id', UsuarioController.delete)
-    .post('/assign-custodian', UsuarioController.assignCustodian);
-module.exports = router;
+    .post('/assign-custodian', UsuarioController.assignCustodian)
+    .get('/get-custodian/:personaId', UsuarioController.getCustodian);
+    
+    module.exports = router;

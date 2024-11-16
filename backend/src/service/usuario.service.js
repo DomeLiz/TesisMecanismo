@@ -168,6 +168,37 @@ class UsuarioService {
     }
   }
 
+  async getCustodian(personaId) {
+    try {
+      // Buscar la persona por su ID
+      const persona = await models.Usuario.findByPk(personaId);
+      if (!persona) {
+        throw new Error('La persona no existe en la base de datos');
+      }
+
+      // Verificar si la persona tiene un custodio asignado
+      if (!persona.idcustodio) {
+        throw new Error('Este usuario no tiene un custodio asignado');
+      }
+
+      // Buscar al custodio usando el idcustodio
+      const custodio = await models.Usuario.findByPk(persona.idcustodio);
+      if (!custodio) {
+        throw new Error('El custodio asignado no existe en la base de datos');
+      }
+
+      return {
+        message: 'Custodio encontrado correctamente',
+        custodio: custodio.toJSON(),
+      };
+    } catch (error) {
+      console.error('Error en getCustodian:', error);
+      throw new Error(error.message || 'Error al obtener el custodio');
+    }
+  }
+  
+  
+
   
 }
 
