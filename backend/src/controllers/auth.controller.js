@@ -1,26 +1,12 @@
 const UserService = require('../service/users.service');
 const userservice = new UserService();
 const jwt = require('jsonwebtoken');
-const PersonsService = require('../service/persona.service');
-const personService = new PersonsService();
+const UsuarioService= require('../service/usuario.service');
+const usuarioService = new UsuarioService();
 const otpGenerator = require('otp-generator');
 const { sendOTP, sendLoginFailEmail,sendOtpFailEmail } = require('../mailer');
 
 const otpStore = {}; // Guarda el OTP para el usuario temporalmente
-
-// Registro de usuario
-
-const register = async (req, res) => {
-  try {
-    const { person, user } = await personService.create(req.body);
-    res.status(201).json({ success: true, data: { person, user } });
-  } catch (error) {
-    // Enviar el mensaje exacto del error que ocurrió
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-
 
 // Login de usuario y envío de OTP
 const login = async (req, res) => {
@@ -46,7 +32,7 @@ const login = async (req, res) => {
     }
 
     // Continuación del proceso si login es correcto...
-    const person = await personService.findByCedula(cedula);
+    const person = await usuarioService.findByCedula(cedula);
     const email = person ? person.email : null;
 
     if (!email) {
@@ -76,7 +62,7 @@ const verifyOTP = async (req, res) => {
     res.json({ success: true, token });
   } else {
     // Envía un correo si el OTP es incorrecto
-    const person = await personService.findByCedula(cedula);
+    const person = await userservice.findByCedula(cedula);
     if (person && person.email) {
       await sendOtpFailEmail(person.email, cedula);
     }
@@ -84,4 +70,4 @@ const verifyOTP = async (req, res) => {
   }
 };
 
-module.exports = { register, login, verifyOTP };
+module.exports = { login, verifyOTP };

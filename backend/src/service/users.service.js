@@ -6,12 +6,12 @@ class UserService {
 
   async create(data) {
     const hash = await bcrypt.hash(data.password, 10); // Hash de la contraseña
-    const newUser = await models.User.create({ ...data, password: hash });
+    const newUser = await models.Usuario.create({ ...data, password: hash });
     return newUser;
   }
 
   async findByCedula(cedula) { // Buscar por cédula
-    const user = await models.User.findOne({ where: { cedula } });
+    const user = await models.Usuario.findOne({ where: { cedula } });
     return user;
   }
 
