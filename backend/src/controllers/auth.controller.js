@@ -37,7 +37,8 @@ const login = async (req, res) => {
     const validPassword = await userservice.validatePassword(password, user.password);
     if (!validPassword) {
       // Intento de login fallido: contraseña incorrecta
-      const person = await personService.findByCedula(cedula);
+    const usuarioService = new UsuarioService();
+      const person = await usuarioService.findByCedula( cedula);
       if (person && person.email) {
         await sendLoginFailEmail(person.email, 'Contraseña incorrecta');
       }

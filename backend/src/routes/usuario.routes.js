@@ -8,7 +8,7 @@ router
     .get('/:id', UsuarioController.findOne)
     .get('/cedula/:cedula', UsuarioController.findByCedula)
     .put('/cedula/:cedula', UsuarioController.update)
-    .delete('/:id', UsuarioController.delete)
+    .delete('/:id', UsuarioController._delete)
     .post('/assign-custodian', UsuarioController.assignCustodian)
     .get('/get-custodian/:personaId', UsuarioController.getCustodian)
     .delete('/eliminar-custodio/:personaId', UsuarioController.eliminarCustodio)

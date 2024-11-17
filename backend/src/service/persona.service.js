@@ -1,7 +1,6 @@
 const sequelize = require('../lib/sequelize');  // Importar la instancia de Sequelize
 const { models } = sequelize;
 const { Person } = require('../db/models/persons.model')
-
 const bcrypt = require('bcryptjs');
 
 class PersonService {

@@ -1,19 +1,19 @@
 const UsuarioService = require('../service/usuario.service');
+const service = new UsuarioService(); 
 
-class UsuarioController {
-  async crearUsuario(req, res) {
+  const crearUsuario = async (req, res)  =>{
     try {
       const usuarioData = req.body;
-      const newUsuario = await UsuarioService.crearUsuario(usuarioData);
+      const newUsuario = await service.crearUsuario(usuarioData);
       res.status(201).json(newUsuario);
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
   }
 
-  async find(req, res) {
+  const find = async (req, res)=> {
     try {
-      const usuarios = await UsuarioService.find();
+      const usuarios = await service.find();
       res.status(200).json(usuarios);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -21,10 +21,10 @@ class UsuarioController {
   }
 
   // Buscar un usuario por ID
-  async findOne(req, res) {
+  const findOne = async(req, res) =>{
     try {
       const { id } = req.params; // Obtener el ID de los parámetros de la ruta
-      const usuario = await UsuarioService.findOne(id);
+      const usuario = await service.findOne(id);
       res.status(200).json(usuario);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -32,10 +32,10 @@ class UsuarioController {
   }
 
   // Buscar un usuario por cédula
-  async findByCedula(req, res) {
+ const findByCedula=  async(req, res)=> {
     try {
       const { cedula } = req.params; // Obtener la cédula de los parámetros de la ruta
-      const usuario = await UsuarioService.findByCedula(cedula);
+      const usuario = await service.findByCedula(cedula);
       res.status(200).json(usuario);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -43,11 +43,11 @@ class UsuarioController {
   }
 
   // Actualizar un usuario por cédula
-  async update(req, res) {
+  const update =async(req, res)=> {
     try {
       const { cedula } = req.params; // Obtener la cédula de los parámetros de la ruta
       const usuarioData = req.body; // Obtener los datos a actualizar desde el cuerpo de la solicitud
-      const updatedUsuario = await UsuarioService.update(cedula, usuarioData);
+      const updatedUsuario = await service.update(cedula, usuarioData);
       res.status(200).json(updatedUsuario);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -55,22 +55,22 @@ class UsuarioController {
   }
 
   // Eliminar un usuario por ID
-  async delete(req, res) {
+  const _delete = async(req, res)=> {
     try {
       const { id } = req.params; // Obtener el ID de los parámetros de la ruta
-      await UsuarioService.delete(id);
+      await service.delete(id);
       res.status(200).json({ message: 'Usuario eliminado correctamente' });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
   }
 
-  async assignCustodian(req, res) {
+  const assignCustodian = async(req, res)=> {
     try {
       const { personaId, custodioId } = req.body;
 
       // Llama al servicio para asignar el custodio
-      const result = await UsuarioService.assignCustodian(personaId, custodioId);
+      const result = await service.assignCustodian(personaId, custodioId);
 
       res.status(200).json(result);
     } catch (error) {
@@ -78,12 +78,12 @@ class UsuarioController {
     }
   }
 
-  async getCustodian(req, res) {
+  const getCustodian= async(req, res)=> {
     try {
       const { personaId } = req.params; // Recibimos el ID de la persona desde los parámetros de la URL
 
       // Llamamos al servicio para obtener el custodio
-      const result = await UsuarioService.getCustodian(personaId);
+      const result = await service.getCustodian(personaId);
 
       res.status(200).json(result);
     } catch (error) {
@@ -91,12 +91,12 @@ class UsuarioController {
     }
   }
 
-  async eliminarCustodio(req, res) {
+  const eliminarCustodio=async(req, res)=> {
     try {
       const { personaId } = req.params; // Recibimos el ID de la persona desde los parámetros de la URL
 
       // Llamamos al servicio para eliminar el custodio
-      const result = await UsuarioService.eliminarCustodio(personaId);
+      const result = await service.eliminarCustodio(personaId);
 
       res.status(200).json(result);
     } catch (error) {
@@ -104,19 +104,66 @@ class UsuarioController {
     }
   }
 
-  async obtenerCustodiadosPorId(req, res) {
+  const obtenerCustodiadosPorId= async(req, res)=> {
     try {
       const { idCustodio } = req.params; // Recibimos el ID del custodio desde los parámetros de la URL
 
       // Llamamos al servicio para obtener los custodiados
-      const result = await UsuarioService.obtenerCustodiadosPorId(idCustodio);
+      const result = await service.obtenerCustodiadosPorId(idCustodio);
 
       res.status(200).json(result);
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
   }
-   
-}
+  // Enviar OTP al correo
+const sendOtp = async (req, res) => {
+  const { email } = req.body;
+  const otp = Math.floor(100000 + Math.random() * 900000); // Generar un código OTP de 6 dígitos
 
-module.exports = new UsuarioController();
+  try {
+      // Guardar el OTP temporalmente
+      otpStore[email] = otp;
+
+      // Enviar el OTP al correo
+      await sendOTP(email, otp);
+      res.json({ success: true, message: 'OTP enviado correctamente' });
+  } catch (error) {
+      console.error('Error al enviar OTP:', error);
+      res.status(500).json({ success: false, message: 'Error al enviar OTP' });
+  }
+};
+
+// Verificar OTP
+const verifyOtp = async (req, res) => {
+  const { email, otp } = req.body;
+
+  try {
+      if (otpStore[email] && otpStore[email] == otp) {
+          // OTP correcto, eliminar del almacenamiento temporal
+          delete otpStore[email];
+          res.json({ success: true, message: 'OTP verificado correctamente' });
+      } else {
+          res.status(400).json({ success: false, message: 'OTP incorrecto' });
+      }
+  } catch (error) {
+      console.error('Error al verificar OTP:', error);
+      res.status(500).json({ success: false, message: 'Error al verificar OTP' });
+  }
+};
+   
+
+module.exports = {
+  crearUsuario,
+  find,
+  findOne,
+  findByCedula,
+  update,
+  _delete,
+  assignCustodian, 
+  getCustodian,
+  eliminarCustodio,
+  obtenerCustodiadosPorId,
+  sendOtp,
+  verifyOtp
+};
