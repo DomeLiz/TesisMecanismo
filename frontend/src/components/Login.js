@@ -16,10 +16,10 @@ const Login = () => {
         password
       });
 
-      // Supongamos que el backend devuelve un campo `role` para saber si es admin o user
+      // Desestructurar los datos de la respuesta
       const { role, token } = response.data;
 
-      // Almacenar el token y la cédula en localStorage
+      // Almacenar el token, la cédula y el usuario_id en localStorage
       localStorage.setItem('token', token);
       localStorage.setItem('cedula', cedula);
 
@@ -29,6 +29,7 @@ const Login = () => {
           state: { 
             cedula,         // Pasar la cédula del admin
             role,           // Pasar el rol (admin)
+            
           }
         });
       } else {
@@ -37,6 +38,7 @@ const Login = () => {
           state: { 
             cedula,         // Pasar la cédula del usuario
             role,           // Pasar el rol (user)
+            
           }
         });
       }

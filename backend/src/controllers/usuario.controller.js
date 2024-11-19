@@ -65,57 +65,59 @@ const service = new UsuarioService();
     }
   }
 
-  const assignCustodian = async(req, res)=> {
-    try {
-      const { personaId, custodioId } = req.body;
 
+  const assignCustodian = async (req, res) => {
+    try {
+      const { cedula, custodioId } = req.body;
+  
       // Llama al servicio para asignar el custodio
-      const result = await service.assignCustodian(personaId, custodioId);
-
+      const result = await service.assignCustodian(cedula, custodioId);
+  
       res.status(200).json(result);
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
-  }
+  };
+  
 
-  const getCustodian= async(req, res)=> {
+  // Obtener el custodio de un usuario por cédula
+  const getCustodian = async (req, res) => {
     try {
-      const { personaId } = req.params; // Recibimos el ID de la persona desde los parámetros de la URL
-
-      // Llamamos al servicio para obtener el custodio
-      const result = await service.getCustodian(personaId);
-
+      const { cedula } = req.params; // Obtener la cédula de los parámetros de la URL
+  
+      if (!cedula) {
+        throw new Error('La cédula es requerida');
+      }
+  
+      // Llamar al servicio para obtener el custodio usando la cédula
+      const result = await service.getCustodian(cedula);
+  
       res.status(200).json(result);
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
-  }
+  };
 
-  const eliminarCustodio=async(req, res)=> {
+
+  const eliminarCustodio = async (req, res) => {
     try {
-      const { personaId } = req.params; // Recibimos el ID de la persona desde los parámetros de la URL
-
+      const { cedula } = req.params; // Obtenemos la cédula de los parámetros de la URL
+  
+      if (!cedula) {
+        throw new Error('La cédula es requerida');
+      }
+  
       // Llamamos al servicio para eliminar el custodio
-      const result = await service.eliminarCustodio(personaId);
-
+      const result = await service.eliminarCustodio(cedula);
+  
       res.status(200).json(result);
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
   }
+  
+  
 
-  const obtenerCustodiadosPorId= async(req, res)=> {
-    try {
-      const { idCustodio } = req.params; // Recibimos el ID del custodio desde los parámetros de la URL
-
-      // Llamamos al servicio para obtener los custodiados
-      const result = await service.obtenerCustodiadosPorId(idCustodio);
-
-      res.status(200).json(result);
-    } catch (error) {
-      res.status(400).json({ message: error.message });
-    }
-  }
   // Enviar OTP al correo
 const sendOtp = async (req, res) => {
   const { email } = req.body;
@@ -163,7 +165,6 @@ module.exports = {
   assignCustodian, 
   getCustodian,
   eliminarCustodio,
-  obtenerCustodiadosPorId,
   sendOtp,
   verifyOtp
 };

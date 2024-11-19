@@ -12,7 +12,7 @@ const DatosCustodiados = () => {
     useEffect(() => {
         const fetchPersonData = async () => {
             try {
-                const response = await axios.get(`http://localhost:3000/api/v1/persons/cedula/${custodioCedula}`, {
+                const response = await axios.get(`http://localhost:3000/api/v1/usuarios/get-custodian/${custodioCedula}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -25,7 +25,7 @@ const DatosCustodiados = () => {
 
         const fetchCustodiadosData = async () => {
             try {
-                const response = await axios.get(`http://localhost:3000/api/v1/persons/custodian/${custodioCedula}/custodiados`, {
+                const response = await axios.get(`http://localhost:3000/api/v1/usuarios/custodiados/${custodioCedula}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -73,15 +73,16 @@ const DatosCustodiados = () => {
             <main className="contenido-principal">
                 <h1>Datos de la Persona</h1>
                 {personData ? (
-                    <div>
-                        <br></br>
-                        <p><strong>Nombre:</strong> {personData.name}</p>
-                        <p><strong>Dirección:</strong> {personData.address}</p>
-                        <p><strong>Teléfono:</strong> {personData.phone}</p>
-                        <p><strong>Correo:</strong> {personData.email}</p>
-                        <p><strong>Cédula:</strong> {personData.cedula}</p>
-                        <br></br>
-                    </div>
+                     <div>
+                     <p><strong>ID:</strong> {personData.usuario_id}</p>
+                     <p><strong>Nombre:</strong> {personData.nombre}</p>
+                     <p><strong>Apellido:</strong> {personData.apellido}</p>
+                     <p><strong>Correo:</strong> {personData.email}</p>
+                     <p><strong>Teléfono:</strong> {personData.telefono}</p>
+                     <p><strong>Cédula:</strong> {personData.cedula}</p>
+                     <p><strong>Dirección:</strong> {personData.direccion}</p>
+                     <p><strong>Fecha de Nacimiento:</strong> {personData.fecha_nacimiento}</p>
+                 </div>
                 ) : (
                     <p>Cargando datos...</p>
                 )}

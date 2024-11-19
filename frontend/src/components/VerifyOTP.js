@@ -10,7 +10,8 @@ const VerifyOtp = () => {
   
   const userRole = location.state?.role;  // Obtener el rol del usuario (admin o user)
   const cedula = location.state?.cedula;  // Obtener la cédula desde el estado
-
+  const usuario_id = localStorage.getItem('usuario_id');  // Obtener el usuario_id del localStorage
+  
   const handleChange = (e) => {
     setOtp(e.target.value);
   };
@@ -61,6 +62,7 @@ const VerifyOtp = () => {
         <button type="submit">Verificar OTP</button>
         {error && <p style={{ color: 'red' }}>{error}</p>}
       </form>
+      
     </div>
   );
 };

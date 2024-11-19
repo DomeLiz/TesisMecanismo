@@ -135,28 +135,28 @@ class UsuarioService {
   }
 
 
-  async assignCustodian(personaId, custodioId) {
+  async assignCustodian(cedula, custodioId) {
     try {
-      if (personaId === custodioId) {
+      if (cedula === custodioId.toString()) {
         throw new Error('El usuario no puede asignarse como su propio custodio');
       }
-
-      // Buscar la persona por su ID
-      const persona = await models.Usuario.findByPk(personaId);
+  
+      // Buscar la persona por su cedula (cedula es un campo varchar)
+      const persona = await models.Usuario.findOne({ where: { cedula } });
       if (!persona) throw new Error('La persona asignada no existe en la base de datos');
-
-      // Verificar si el custodio existe
+  
+      // Verificar si el custodio existe (custodioId es un entero)
       const custodio = await models.Usuario.findByPk(custodioId);
       if (!custodio) throw new Error('El custodio asignado no existe en la base de datos');
-
+  
       // Actualizar el campo idcustodio de la persona
       persona.idcustodio = custodioId;
       await persona.save();
-
+  
       // Cambiar el rol del custodio a "custodio"
       custodio.rol = 'custodio';
       await custodio.save();
-
+  
       return {
         message: 'Custodio asignado correctamente',
         persona: persona.toJSON(),
@@ -166,27 +166,28 @@ class UsuarioService {
       console.error('Error en assignCustodian:', error);
       throw new Error(error.message || 'Error al asignar custodio');
     }
-  }
-
-  async getCustodian(personaId) {
+  }  
+  
+  // Obtener el custodio de un usuario por cédula
+  async getCustodian(cedula) {
     try {
-      // Buscar la persona por su ID
-      const persona = await models.Usuario.findByPk(personaId);
+      // Buscar la persona por su cédula usando el método findByCedula
+      const persona = await this.findByCedula(cedula);
       if (!persona) {
         throw new Error('La persona no existe en la base de datos');
       }
-
+  
       // Verificar si la persona tiene un custodio asignado
       if (!persona.idcustodio) {
         throw new Error('Este usuario no tiene un custodio asignado');
       }
-
+  
       // Buscar al custodio usando el idcustodio
       const custodio = await models.Usuario.findByPk(persona.idcustodio);
       if (!custodio) {
         throw new Error('El custodio asignado no existe en la base de datos');
       }
-
+  
       return {
         message: 'Custodio encontrado correctamente',
         custodio: custodio.toJSON(),
@@ -196,34 +197,34 @@ class UsuarioService {
       throw new Error(error.message || 'Error al obtener el custodio');
     }
   }
-  
-  async eliminarCustodio(personaId) {
+
+  async eliminarCustodio(cedula) {
     try {
-      // Buscar la persona por su ID
-      const persona = await models.Usuario.findByPk(personaId);
+      // Buscar la persona por su cédula usando el método findByCedula
+      const persona = await models.Usuario.findOne({ where: { cedula } });
       if (!persona) {
         throw new Error('La persona no existe en la base de datos');
       }
-
+  
       // Verificar si la persona tiene un custodio asignado
       if (!persona.idcustodio) {
         throw new Error('Este usuario no tiene un custodio asignado');
       }
-
+  
       // Buscar al custodio usando el idcustodio
       const custodio = await models.Usuario.findByPk(persona.idcustodio);
       if (!custodio) {
         throw new Error('El custodio asignado no existe en la base de datos');
       }
-
+  
       // Eliminar la referencia al custodio en el usuario
       persona.idcustodio = null;
       await persona.save();
-
+  
       // Cambiar el rol del custodio o eliminarlo, dependiendo de lo que quieras hacer
       custodio.rol = null;  // Cambiar el rol a usuario (puedes modificarlo según tu necesidad)
       await custodio.save();
-
+  
       return {
         message: 'Custodio eliminado correctamente',
         personaActualizada: persona.toJSON(),
@@ -234,26 +235,8 @@ class UsuarioService {
       throw new Error(error.message || 'Error al eliminar el custodio');
     }
   }
-
-  async obtenerCustodiadosPorId(idCustodio) {
-    try {
-      // Buscar todos los usuarios que tienen asignado el custodio con el id proporcionado
-      const custodiados = await models.Usuario.findAll({
-        where: { idcustodio: idCustodio }, // Filtramos por el idcustodio
-      });
-
-      // Verificamos si hay custodiados
-      if (custodiados.length === 0) {
-        throw new Error('No hay usuarios custodiados por este custodio');
-      }
-
-      // Devolver los usuarios que son custodiados
-      return custodiados.map((usuario) => usuario.toJSON());
-    } catch (error) {
-      console.error('Error en obtenerCustodiadosPorId:', error);
-      throw new Error(error.message || 'Error al obtener los custodiados');
-    }
-  }
+  
+  
   
 }
 

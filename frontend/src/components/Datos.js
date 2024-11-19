@@ -5,13 +5,14 @@ import { useNavigate } from 'react-router-dom';
 const Datos = () => {
     const [personData, setPersonData] = useState(null);
     const cedula = localStorage.getItem('cedula'); // Obtener la cédula desde localStorage
+    const usuario_id = localStorage.getItem('usuario_id');
     const token = localStorage.getItem('token'); // Obtener el token desde localStorage
     const navigate = useNavigate(); // Usar useNavigate para la navegación
 
     useEffect(() => {
         const fetchPersonData = async () => {
             try {
-                const response = await axios.get(`http://localhost:3000/api/v1/persons/cedula/${cedula}`, {
+                const response = await axios.get(`http://localhost:3000/api/v1/usuarios/cedula/${cedula}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -51,11 +52,14 @@ const Datos = () => {
                 <h1>Datos de la Persona</h1>
                 {personData ? (
                     <div>
-                        <p><strong>Nombre:</strong> {personData.name}</p>
-                        <p><strong>Dirección:</strong> {personData.address}</p>
-                        <p><strong>Teléfono:</strong> {personData.phone}</p>
+                        <p><strong>ID:</strong> {personData.usuario_id}</p>
+                        <p><strong>Nombre:</strong> {personData.nombre}</p>
+                        <p><strong>Apellido:</strong> {personData.apellido}</p>
                         <p><strong>Correo:</strong> {personData.email}</p>
+                        <p><strong>Teléfono:</strong> {personData.telefono}</p>
                         <p><strong>Cédula:</strong> {personData.cedula}</p>
+                        <p><strong>Dirección:</strong> {personData.direccion}</p>
+                        <p><strong>Fecha de Nacimiento:</strong> {personData.fecha_nacimiento}</p>
                     </div>
                 ) : (
                     <p>Cargando datos...</p>
