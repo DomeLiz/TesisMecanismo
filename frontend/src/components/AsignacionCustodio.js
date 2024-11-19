@@ -39,7 +39,7 @@ const AsignacionCustodio = () => {
 
     // Validación de entrada
     if (!cedulaCustodio || isNaN(cedulaCustodio)) {
-      setError('Por favor, ingresa un número válido como cédula del custodio.');
+      setError('Por favor, ingresa un ID válido de custodio.');
       return;
     }
 
@@ -110,7 +110,7 @@ const AsignacionCustodio = () => {
         </div>
 
         <div>
-          <label>Cédula del Custodio</label>
+          <label>ID del Custodio</label>
           <input
             type="text"
             value={cedulaCustodio || (custodioActual ? custodioActual.usuario_id : '')}  // Mostrar el custodio actual si existe

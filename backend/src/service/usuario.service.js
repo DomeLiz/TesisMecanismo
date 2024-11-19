@@ -236,7 +236,6 @@ class UsuarioService {
     }
   }
   
-  // Obtener los custodios por idcustodio
 // Obtener todos los custodiados de una persona por cédula
 async getCustodiados(cedula) {
   try {
