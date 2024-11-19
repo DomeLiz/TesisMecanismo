@@ -153,6 +153,26 @@ const verifyOtp = async (req, res) => {
       res.status(500).json({ success: false, message: 'Error al verificar OTP' });
   }
 };
+
+// Obtener los custodiados de un usuario por cédula
+const getCustodiados = async (req, res) => {
+  try {
+    const { cedula } = req.params; // Obtener la cédula de los parámetros de la URL
+
+    if (!cedula) {
+      throw new Error('La cédula es requerida');
+    }
+
+    // Llamar al servicio para obtener los custodiados usando la cédula
+    const result = await service.getCustodiados(cedula);
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+
    
 
 module.exports = {
@@ -166,5 +186,6 @@ module.exports = {
   getCustodian,
   eliminarCustodio,
   sendOtp,
-  verifyOtp
+  verifyOtp,
+  getCustodiados
 };

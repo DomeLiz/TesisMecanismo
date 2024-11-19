@@ -236,7 +236,36 @@ class UsuarioService {
     }
   }
   
-  
+  // Obtener los custodios por idcustodio
+// Obtener todos los custodiados de una persona por cédula
+async getCustodiados(cedula) {
+  try {
+    // Buscar al usuario por su cédula
+    const persona = await models.Usuario.findOne({ where: { cedula } });
+    if (!persona) {
+      throw new Error('La persona no existe en la base de datos');
+    }
+
+    // Obtener todos los usuarios que tienen como idcustodio el id de la persona
+    const custodiados = await models.Usuario.findAll({
+      where: { idcustodio: persona.usuario_id }
+    });
+
+    if (custodiados.length === 0) {
+      throw new Error('No se encontraron custodiados para esta persona');
+    }
+
+    return {
+      message: 'Custodiados encontrados correctamente',
+      custodiados: custodiados.map(c => c.toJSON()),
+    };
+  } catch (error) {
+    console.error('Error en getCustodiados:', error);
+    throw new Error(error.message || 'Error al obtener los custodiados');
+  }
+}
+
+
   
 }
 
