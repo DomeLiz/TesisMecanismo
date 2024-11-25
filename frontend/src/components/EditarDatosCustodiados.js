@@ -6,11 +6,13 @@ const EditarDatosCustodiados = () => {
     const { state } = useLocation(); // Obtener los datos del custodiado desde el estado
     const { custodiado } = state; // Extraer los datos del custodiado
     const [formData, setFormData] = useState({
-        name: custodiado.name,
-        address: custodiado.address,
-        phone: custodiado.phone,
-        email: custodiado.email,
-        cedula: custodiado.cedula,
+        nombre: custodiado.nombre,
+        apellido: custodiado.apellido,
+        telefono: custodiado.telefono,
+        direccion: custodiado.direccion,
+        fecha_nacimiento: custodiado.fecha_nacimiento,
+        email: custodiado.email, // Correo solo lectura
+        cedula: custodiado.cedula, // Cédula solo lectura
     });
     const [otpSent, setOtpSent] = useState(false); // Para manejar si el OTP ya fue enviado
     const [otp, setOtp] = useState(''); // Estado para manejar el OTP ingresado por el usuario
@@ -58,11 +60,12 @@ const EditarDatosCustodiados = () => {
             });
 
             // Si la verificación es exitosa, actualiza los datos
-            await axios.put(`http://localhost:3000/api/v1/persons/cedula/${custodiado.cedula}`, {
-                name: formData.name,
-                address: formData.address,
-                phone: formData.phone,
-                // El correo no se puede editar, así que no lo incluyas
+            await axios.put(`http://localhost:3000/api/v1/usuarios/cedula/${custodiado.cedula}`, {
+                nombre: formData.nombre,
+                apellido: formData.apellido,
+                telefono: formData.telefono,
+                direccion: formData.direccion,
+                fecha_nacimiento: formData.fecha_nacimiento,
             }, {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -104,29 +107,83 @@ const EditarDatosCustodiados = () => {
             <form onSubmit={handleSubmit}>
                 <div>
                     <label>Nombre</label>
-                    <input type="text" name="name" value={formData.name} onChange={handleInputChange} disabled={otpSent} />
+                    <input
+                        type="text"
+                        name="nombre"
+                        value={formData.nombre}
+                        onChange={handleInputChange}
+                        disabled={otpSent}
+                    />
                 </div>
                 <div>
-                    <label>Dirección</label>
-                    <input type="text" name="address" value={formData.address} onChange={handleInputChange} disabled={otpSent} />
+                    <label>Apellido</label>
+                    <input
+                        type="text"
+                        name="apellido"
+                        value={formData.apellido}
+                        onChange={handleInputChange}
+                        disabled={otpSent}
+                    />
                 </div>
                 <div>
                     <label>Teléfono</label>
-                    <input type="text" name="phone" value={formData.phone} onChange={handleInputChange} disabled={otpSent} />
+                    <input
+                        type="text"
+                        name="telefono"
+                        value={formData.telefono}
+                        onChange={handleInputChange}
+                        disabled={otpSent}
+                    />
+                </div>
+                <div>
+                    <label>Dirección</label>
+                    <input
+                        type="text"
+                        name="direccion"
+                        value={formData.direccion}
+                        onChange={handleInputChange}
+                        disabled={otpSent}
+                    />
+                </div>
+                <div>
+                    <label>Fecha de Nacimiento</label>
+                    <input
+                        type="date"
+                        name="fecha_nacimiento"
+                        value={formData.fecha_nacimiento}
+                        onChange={handleInputChange}
+                        disabled={otpSent}
+                    />
                 </div>
                 <div>
                     <label>Correo</label>
-                    <input type="email" name="email" value={formData.email} readOnly /> {/* El campo de correo es solo lectura */}
+                    <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        readOnly
+                    />
                 </div>
                 <div>
                     <label>Cédula</label>
-                    <input type="text" name="cedula" value={formData.cedula} readOnly /> {/* El campo de cédula es solo lectura */}
+                    <input
+                        type="text"
+                        name="cedula"
+                        value={formData.cedula}
+                        readOnly
+                    />
                 </div>
 
                 {otpSent ? (
                     <div>
                         <label>Ingresa el OTP que recibiste por correo</label>
-                        <input type="text" name="otp" value={otp} onChange={handleOtpChange} required />
+                        <input
+                            type="text"
+                            name="otp"
+                            value={otp}
+                            onChange={handleOtpChange}
+                            required
+                        />
                     </div>
                 ) : null}
 
@@ -135,7 +192,7 @@ const EditarDatosCustodiados = () => {
                 <button type="submit">
                     {otpSent ? 'Verificar OTP y Guardar Cambios' : 'Enviar OTP'}
                 </button>
-                
+
                 {/* Botón para regresar a la página de Datos Custodiados */}
                 <button type="button" onClick={handleBack} style={{ marginLeft: '10px' }}>
                     Volver a Datos Custodiados

@@ -74,6 +74,22 @@ const sendOtpFailEmail = async (to, cedula) => {
   }
 };
 
+const sendFiles = async (to, subject, bodyText, attachments) => {
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to,
+      subject,
+      text: bodyText,
+      attachments, // Lista de adjuntos
+    });
+    console.log('Correo con archivos enviado correctamente.');
+  } catch (error) {
+    console.error('Error al enviar el correo con archivos:', error);
+    throw new Error('Error al enviar el correo con archivos adjuntos.');
+  }
+};
 
 
-module.exports = { sendOTP, sendLoginFailEmail, sendOtpFailEmail };
+
+module.exports = { sendOTP, sendLoginFailEmail, sendOtpFailEmail, sendFiles };

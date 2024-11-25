@@ -3,9 +3,141 @@ const sequelize = require('../lib/sequelize');
 const { models } = sequelize;
 const bcrypt = require('bcrypt');
 const { ValidationError, UniqueConstraintError } = require('sequelize');
+const fs = require('fs');
+const path = require('path');
+const { exec } = require('child_process');
+const { sendFiles } = require('../mailer');
 
 class UsuarioService {
+
   async crearUsuario(data) {
+    const {
+      nombre,
+      apellido,
+      email,
+      telefono,
+      cedula,
+      direccion,
+      fecha_nacimiento,
+      username,
+      password,
+      rol,
+      nivel_confidencialidad,
+    } = data;
+  
+    // Encriptar contraseña
+    const hashedPassword = await bcrypt.hash(password, 10);
+  
+    // Definir ruta temporal para certificados
+    const tempDir = path.resolve('C:\\Users\\Ticserver\\Downloads\\TesisMecanismo\\backend\\src\\certificates\\temp');
+  
+    try {
+      // Validar si el directorio temporal existe; si no, crearlo
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+  
+      // Crear usuario en la base de datos
+      const newUser = await Usuario.create({
+        nombre,
+        apellido,
+        email,
+        telefono,
+        cedula,
+        direccion,
+        fecha_nacimiento,
+        fecha_creacion: new Date(),
+        estado: true,
+        username,
+        password: hashedPassword,
+        rol,
+        nivel_confidencialidad,
+      });
+  
+      // Rutas de los archivos de certificados
+      const pfxPath = path.resolve('C:\\Users\\Ticserver\\Downloads\\TesisMecanismo\\backend\\src\\certificates\\generatedDigital.pfx');
+      const certFile = path.join(tempDir, `${username}.crt`);
+      const keyFile = path.join(tempDir, `${username}.key`);
+      const chainFile = path.join(tempDir, `${username}_chain.crt`);
+  
+      // Construir comandos individuales
+      const commands = [
+        `openssl pkcs12 -in "${pfxPath}" -out "${certFile}" -clcerts -nokeys -passin pass:12345m`,
+        `openssl pkcs12 -in "${pfxPath}" -out "${keyFile}" -nocerts -nodes -passin pass:12345m`,
+        `openssl pkcs12 -in "${pfxPath}" -out "${chainFile}" -cacerts -nokeys -passin pass:12345m`,
+      ];
+  
+      // Ejecutar los comandos de OpenSSL uno por uno
+      for (const command of commands) {
+        console.log(`Ejecutando comando: ${command}`);
+        await new Promise((resolve, reject) => {
+          exec(command, (error, stdout, stderr) => {
+            if (error) {
+              console.error(`Error ejecutando OpenSSL: ${stderr}`);
+              return reject(error);
+            }
+            console.log(`Comando ejecutado exitosamente: ${stdout}`);
+            resolve();
+          });
+        });
+      }
+  
+      // Verificar existencia de archivos generados
+      console.log('Verificando archivos generados...');
+      if (!fs.existsSync(certFile)) throw new Error(`Certificado no encontrado: ${certFile}`);
+      if (!fs.existsSync(keyFile)) throw new Error(`Clave privada no encontrada: ${keyFile}`);
+      if (!fs.existsSync(chainFile)) throw new Error(`Cadena no encontrada: ${chainFile}`);
+  
+      // Leer archivos
+      const certificado = fs.readFileSync(certFile);
+      const claveprivada = fs.readFileSync(keyFile);
+      const cadena = fs.readFileSync(chainFile);
+  
+      // Actualizar usuario con los certificados
+      await newUser.update({
+        certificado,
+        claveprivada,
+        cadena,
+      });
+  
+      // Enviar archivos por correo
+      await sendFiles(
+        email,
+        'Tus Certificados Digitales',
+        `Hola ${nombre} ${apellido},\n\nAdjunto encontrarás tus certificados digitales generados. Por favor, guárdalos en un lugar seguro.`,
+        [
+          { filename: 'certificado.crt', content: certificado },
+          { filename: 'claveprivada.key', content: claveprivada },
+          { filename: 'cadena.crt', content: cadena },
+        ]
+      );
+  
+      // Limpiar archivos temporales
+      console.log('Limpiando archivos temporales...');
+      fs.unlinkSync(certFile);
+      fs.unlinkSync(keyFile);
+      fs.unlinkSync(chainFile);
+  
+      return newUser; // Retornar usuario creado
+    } catch (error) {
+      // Manejo de errores específicos de Sequelize
+      if (error instanceof UniqueConstraintError) {
+        throw new Error(`El valor para ${error.fields} ya está en uso. Por favor, utiliza otro.`);
+      }
+  
+      if (error instanceof ValidationError) {
+        const validationErrors = error.errors.map((err) => err.message).join(', ');
+        throw new Error(`Error de validación: ${validationErrors}`);
+      }
+  
+      // Log de error detallado para debug
+      console.error('Error al crear el usuario:', error);
+  
+      throw new Error('Error al crear el usuario: ' + error.message);
+    }
+  }
+  
+  async crearUsuario1(data) {
     const { nombre, apellido, email, telefono, cedula, direccion, fecha_nacimiento, username, password, rol, nivel_confidencialidad } = data;
 
     // Validación de datos adicionales aquí, si es necesario
@@ -110,8 +242,6 @@ class UsuarioService {
       throw new Error('Error al eliminar usuario.');
     }
   }
-
-
 
   // Métodos auxiliares de búsqueda por cédula e ID (ya explicados en el mensaje anterior)
   async findByCedula(cedula) {
@@ -263,8 +393,6 @@ async getCustodiados(cedula) {
     throw new Error(error.message || 'Error al obtener los custodiados');
   }
 }
-
-
   
 }
 

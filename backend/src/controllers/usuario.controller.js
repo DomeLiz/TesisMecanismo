@@ -115,8 +115,6 @@ const service = new UsuarioService();
       res.status(400).json({ message: error.message });
     }
   }
-  
-  
 
   // Enviar OTP al correo
 const sendOtp = async (req, res) => {

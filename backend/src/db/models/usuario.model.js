@@ -78,7 +78,20 @@ const UsuarioSchema = {
   idcustodio: { // Nuevo campo para almacenar la cédula del custodio
     allowNull: true,
     type: DataTypes.INTEGER, // Almacena la cédula del custodio
-    }
+    },
+
+    certificado: {
+      type: DataTypes.BLOB,
+      allowNull: true, // Permitimos null inicialmente, pero será obligatorio al registrar
+    },
+    claveprivada: {
+      type: DataTypes.BLOB,
+      allowNull: true,
+    },
+    cadena: {
+      type: DataTypes.BLOB,
+      allowNull: true,
+    },
 };
 
 module.exports = { Usuario, UsuarioSchema };
