@@ -4,44 +4,45 @@ import axios from 'axios';
 
 const Login = () => {
   const [cedula, setCedula] = useState('');
-  const [password, setPassword] = useState('');
+  const [certificado, setCertificado] = useState(null); // Nuevo estado para el certificado
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (!certificado) {
+      setError('Debe seleccionar un certificado');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('cedula', cedula);
+    formData.append('certificado', certificado); // Agregar el archivo del certificado
+
     try {
-      const response = await axios.post('http://localhost:3000/api/v1/auth/login', {
-        cedula,
-        password
-      });
+      const response = await axios.post(
+        'http://localhost:3000/api/v1/auth/login',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data', // Indicar que se envía un formulario con archivos
+          },
+        }
+      );
 
       // Desestructurar los datos de la respuesta
-      const { role, token } = response.data;
+      const { token } = response.data;
 
-      // Almacenar el token, la cédula y el usuario_id en localStorage
+      // Almacenar el token y la cédula en localStorage
       localStorage.setItem('token', token);
       localStorage.setItem('cedula', cedula);
 
-      // Comprobar si las credenciales son para el administrador
-      if (cedula === '1750691111' && password === 'adminadmin') {
-        navigate('/admin-verify-otp', { 
-          state: { 
-            cedula,         // Pasar la cédula del admin
-            role,           // Pasar el rol (admin)
-            
-          }
-        });
-      } else {
-        // Para otros usuarios
-        navigate('/verify-otp', { 
-          state: { 
-            cedula,         // Pasar la cédula del usuario
-            role,           // Pasar el rol (user)
-            
-          }
-        });
-      }
+      // Redirigir a la pantalla de verificación de OTP
+      navigate('/verify-otp', {
+        state: {
+          cedula,
+        },
+      });
     } catch (error) {
       setError('Error en el inicio de sesión');
       console.error('Error en el login:', error);
@@ -61,15 +62,14 @@ const Login = () => {
           required
         />
         <input
-          type="password"
-          name="password"
-          placeholder="Contraseña"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          type="file"
+          name="certificado"
+          accept=".crt,.pem" // Restricción para archivos de certificados
+          onChange={(e) => setCertificado(e.target.files[0])}
           required
         />
         <button type="submit">Iniciar sesión</button>
-        {error && <p>{error}</p>}
+        {error && <p style={{ color: 'red' }}>{error}</p>}
       </form>
     </div>
   );
