@@ -10,6 +10,121 @@ const { sendFiles } = require('../mailer');
 
 class UsuarioService {
 
+  async crearUsuario2(data) {
+    const {
+      nombre,
+      apellido,
+      email,
+      telefono,
+      cedula,
+      direccion,
+      fecha_nacimiento,
+      username,
+      password,
+      rol,
+      nivel_confidencialidad,
+    } = data;
+  
+    const hashedPassword = await bcrypt.hash(password, 10);
+  
+    const tempDir = path.resolve('C:\\Users\\Ticserver\\Downloads\\TesisMecanismo\\backend\\src\\certificates\\temp');
+  
+    try {
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+  
+      const newUser = await Usuario.create({
+        nombre,
+        apellido,
+        email,
+        telefono,
+        cedula,
+        direccion,
+        fecha_nacimiento,
+        fecha_creacion: new Date(),
+        estado: true,
+        username,
+        password: hashedPassword,
+        rol,
+        nivel_confidencialidad,
+      });
+  
+      const pfxPath = path.resolve('C:\\Users\\Ticserver\\Downloads\\TesisMecanismo\\backend\\src\\certificates\\generatedDigital.pfx');
+      const pemCertFile = path.join(tempDir, `${username}.pem`);
+      const derCertFile = path.join(tempDir, `${username}.der`);
+      const keyFile = path.join(tempDir, `${username}.key`);
+      const chainFile = path.join(tempDir, `${username}_chain.pem`);
+  
+      const commands = [
+        `openssl pkcs12 -in "${pfxPath}" -out "${pemCertFile}" -clcerts -nokeys -passin pass:12345m`,
+        `openssl pkcs12 -in "${pfxPath}" -out "${keyFile}" -nocerts -nodes -passin pass:12345m`,
+        `openssl pkcs12 -in "${pfxPath}" -out "${chainFile}" -cacerts -nokeys -passin pass:12345m`,
+        `openssl x509 -in "${pemCertFile}" -out "${derCertFile}" -outform DER`, // Conversión a DER
+      ];
+  
+      for (const command of commands) {
+        console.log(`Ejecutando comando: ${command}`);
+        await new Promise((resolve, reject) => {
+          exec(command, (error, stdout, stderr) => {
+            if (error) {
+              console.error(`Error ejecutando OpenSSL: ${stderr}`);
+              return reject(error);
+            }
+            console.log(`Comando ejecutado exitosamente: ${stdout}`);
+            resolve();
+          });
+        });
+      }
+  
+      console.log('Verificando archivos generados...');
+      if (!fs.existsSync(derCertFile)) throw new Error(`Certificado DER no encontrado: ${derCertFile}`);
+      if (!fs.existsSync(keyFile)) throw new Error(`Clave privada no encontrada: ${keyFile}`);
+      if (!fs.existsSync(chainFile)) throw new Error(`Cadena no encontrada: ${chainFile}`);
+  
+      const certificado = fs.readFileSync(derCertFile);
+      const claveprivada = fs.readFileSync(keyFile);
+      const cadena = fs.readFileSync(chainFile);
+  
+      await newUser.update({
+        certificado,
+        claveprivada,
+        cadena,
+      });
+  
+      await sendFiles(
+        email,
+        'Tus Certificados Digitales',
+        `Hola ${nombre} ${apellido},\n\nAdjunto encontrarás tus certificados digitales generados. Por favor, guárdalos en un lugar seguro.`,
+        [
+          { filename: 'certificado.der', content: certificado },
+          { filename: 'claveprivada.key', content: claveprivada },
+          { filename: 'cadena.pem', content: cadena },
+        ]
+      );
+  
+      console.log('Limpiando archivos temporales...');
+      fs.unlinkSync(derCertFile);
+      fs.unlinkSync(keyFile);
+      fs.unlinkSync(chainFile);
+      fs.unlinkSync(pemCertFile);
+  
+      return newUser;
+    } catch (error) {
+      if (error instanceof UniqueConstraintError) {
+        throw new Error(`El valor para ${error.fields} ya está en uso. Por favor, utiliza otro.`);
+      }
+  
+      if (error instanceof ValidationError) {
+        const validationErrors = error.errors.map((err) => err.message).join(', ');
+        throw new Error(`Error de validación: ${validationErrors}`);
+      }
+  
+      console.error('Error al crear el usuario:', error);
+      throw new Error('Error al crear el usuario: ' + error.message);
+    }
+  }
+
   async crearUsuario(data) {
     const {
       nombre,
@@ -25,19 +140,14 @@ class UsuarioService {
       nivel_confidencialidad,
     } = data;
   
-    // Encriptar contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
-  
-    // Definir ruta temporal para certificados
-    const tempDir = path.resolve('C:\\Users\\Ticserver\\Downloads\\TesisMecanismo\\backend\\src\\certificates\\temp');
+    const tempDir = path.resolve('C:\\temp\\certificates', username);
   
     try {
-      // Validar si el directorio temporal existe; si no, crearlo
       if (!fs.existsSync(tempDir)) {
         fs.mkdirSync(tempDir, { recursive: true });
       }
   
-      // Crear usuario en la base de datos
       const newUser = await Usuario.create({
         nombre,
         apellido,
@@ -54,20 +164,20 @@ class UsuarioService {
         nivel_confidencialidad,
       });
   
-      // Rutas de los archivos de certificados
-      const pfxPath = path.resolve('C:\\Users\\Ticserver\\Downloads\\TesisMecanismo\\backend\\src\\certificates\\generatedDigital.pfx');
-      const certFile = path.join(tempDir, `${username}.crt`);
-      const keyFile = path.join(tempDir, `${username}.key`);
-      const chainFile = path.join(tempDir, `${username}_chain.crt`);
+      const privateKeyPath = path.join(tempDir, 'private.key');
+      const csrPath = path.join(tempDir, 'request.csr');
+      const certPath = path.join(tempDir, 'certificate.der');
   
-      // Construir comandos individuales
+      // Comandos OpenSSL
       const commands = [
-        `openssl pkcs12 -in "${pfxPath}" -out "${certFile}" -clcerts -nokeys -passin pass:12345m`,
-        `openssl pkcs12 -in "${pfxPath}" -out "${keyFile}" -nocerts -nodes -passin pass:12345m`,
-        `openssl pkcs12 -in "${pfxPath}" -out "${chainFile}" -cacerts -nokeys -passin pass:12345m`,
+        // Generar clave privada
+        `openssl genpkey -algorithm RSA -out "${privateKeyPath}" -pkeyopt rsa_keygen_bits:2048`,
+        // Crear CSR (Certificate Signing Request)
+        `openssl req -new -key "${privateKeyPath}" -out "${csrPath}" -subj "/C=EC/ST=Pichincha/L=Quito/O=EPN/CN=${username}"`,
+        // Generar certificado a partir del CSR (autofirmado, válido por 1 año)
+        `openssl x509 -req -days 365 -in "${csrPath}" -signkey "${privateKeyPath}" -outform DER -out "${certPath}"`,
       ];
   
-      // Ejecutar los comandos de OpenSSL uno por uno
       for (const command of commands) {
         console.log(`Ejecutando comando: ${command}`);
         await new Promise((resolve, reject) => {
@@ -82,103 +192,38 @@ class UsuarioService {
         });
       }
   
-      // Verificar existencia de archivos generados
       console.log('Verificando archivos generados...');
-      if (!fs.existsSync(certFile)) throw new Error(`Certificado no encontrado: ${certFile}`);
-      if (!fs.existsSync(keyFile)) throw new Error(`Clave privada no encontrada: ${keyFile}`);
-      if (!fs.existsSync(chainFile)) throw new Error(`Cadena no encontrada: ${chainFile}`);
+      if (!fs.existsSync(certPath)) throw new Error(`Certificado no encontrado: ${certPath}`);
+      if (!fs.existsSync(privateKeyPath)) throw new Error(`Clave privada no encontrada: ${privateKeyPath}`);
   
-      // Leer archivos
-      const certificado = fs.readFileSync(certFile);
-      const claveprivada = fs.readFileSync(keyFile);
-      const cadena = fs.readFileSync(chainFile);
+      const certificado = fs.readFileSync(certPath);
+      const claveprivada = fs.readFileSync(privateKeyPath);
   
-      // Actualizar usuario con los certificados
       await newUser.update({
         certificado,
         claveprivada,
-        cadena,
       });
   
-      // Enviar archivos por correo
       await sendFiles(
         email,
         'Tus Certificados Digitales',
         `Hola ${nombre} ${apellido},\n\nAdjunto encontrarás tus certificados digitales generados. Por favor, guárdalos en un lugar seguro.`,
         [
-          { filename: 'certificado.crt', content: certificado },
+          { filename: 'certificado.der', content: certificado },
           { filename: 'claveprivada.key', content: claveprivada },
-          { filename: 'cadena.crt', content: cadena },
         ]
       );
   
-      // Limpiar archivos temporales
       console.log('Limpiando archivos temporales...');
-      fs.unlinkSync(certFile);
-      fs.unlinkSync(keyFile);
-      fs.unlinkSync(chainFile);
+      fs.rmSync(tempDir, { recursive: true, force: true });
   
-      return newUser; // Retornar usuario creado
-    } catch (error) {
-      // Manejo de errores específicos de Sequelize
-      if (error instanceof UniqueConstraintError) {
-        throw new Error(`El valor para ${error.fields} ya está en uso. Por favor, utiliza otro.`);
-      }
-  
-      if (error instanceof ValidationError) {
-        const validationErrors = error.errors.map((err) => err.message).join(', ');
-        throw new Error(`Error de validación: ${validationErrors}`);
-      }
-  
-      // Log de error detallado para debug
-      console.error('Error al crear el usuario:', error);
-  
-      throw new Error('Error al crear el usuario: ' + error.message);
-    }
-  }
-  
-  async crearUsuario1(data) {
-    const { nombre, apellido, email, telefono, cedula, direccion, fecha_nacimiento, username, password, rol, nivel_confidencialidad } = data;
-
-    // Validación de datos adicionales aquí, si es necesario
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    try {
-      // Intentamos crear el nuevo usuario
-      const newUser = await Usuario.create({
-        nombre,
-        apellido,
-        email,
-        telefono,
-        cedula,
-        direccion,
-        fecha_nacimiento,
-        fecha_creacion: new Date(),
-        estado: true,
-        username,
-        password: hashedPassword,
-        rol,
-        nivel_confidencialidad,
-      });
-
       return newUser;
     } catch (error) {
-      // Manejo de errores específico
-      if (error instanceof UniqueConstraintError) {
-        // Si hay un error de restricción única (duplicados en email, username o cedula)
-        throw new Error(`El valor para ${error.fields} ya está en uso. Por favor, utiliza otro.`);
-      }
-
-      if (error instanceof ValidationError) {
-        // Si hay un error de validación (por ejemplo, campos faltantes o inválidos)
-        const validationErrors = error.errors.map(err => err.message).join(', ');
-        throw new Error(`Error de validación: ${validationErrors}`);
-      }
-
-      // Para cualquier otro error
+      console.error('Error al crear el usuario:', error);
       throw new Error('Error al crear el usuario: ' + error.message);
     }
   }
+  
 
   async find() {
     try {
