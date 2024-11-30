@@ -31,14 +31,15 @@ const Login = () => {
       );
 
       // Desestructurar los datos de la respuesta
-      const { token } = response.data;
+      const { token, role } = response.data;
 
       // Almacenar el token y la cédula en localStorage
       localStorage.setItem('token', token);
       localStorage.setItem('cedula', cedula);
 
-      // Redirigir a la pantalla de verificación de OTP
-      navigate('/verify-otp', {
+      // Redirigir según el rol del usuario
+      const route = role === 'admin' ? '/admin-verify-otp' : '/verify-otp';
+      navigate(route, {
         state: {
           cedula,
         },
@@ -64,7 +65,7 @@ const Login = () => {
         <input
           type="file"
           name="certificado"
-          accept=".crt,.pem" // Restricción para archivos de certificados
+          accept=".der" // Cambiado a .der como requerido
           onChange={(e) => setCertificado(e.target.files[0])}
           required
         />
