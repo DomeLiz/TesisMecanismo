@@ -92,6 +92,15 @@ const UsuarioSchema = {
       type: DataTypes.BLOB,
       allowNull: true,
     },
+    intentos_fallidos: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false,
+    },
+    ultimo_intento_fallido: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
 };
 
 module.exports = { Usuario, UsuarioSchema };

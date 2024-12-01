@@ -9,10 +9,13 @@ const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const otpStore = {}; // Almacenamiento temporal para OTPs
+const otpStore = {}; 
 
-// Login de usuario con certificado y generación de OTP
-const login2 = async (req, res) => {
+const MAX_FAILED_ATTEMPTS = 3; // Número máximo de intentos fallidos permitidos
+const BLOCK_TIME = 15 * 60 * 1000; // Tiempo de bloqueo en milisegundos (15 minutos)
+
+// Método de login con intento fallido y control de bloqueo
+const login = async (req, res) => {
   try {
     const { cedula } = req.body;
     const certificado = req.files?.certificado;
@@ -32,6 +35,24 @@ const login2 = async (req, res) => {
     const user = await usuarioService.findByCedula(cedula);
 
     if (!user || !user.certificado) {
+      // Incrementar intentos fallidos y actualizar el último intento fallido
+      await user.update({
+        intentos_fallidos: user.intentos_fallidos + 1,
+        ultimo_intento_fallido: new Date(),
+      });
+
+      if (user.intentos_fallidos >= MAX_FAILED_ATTEMPTS) {
+        const timeRemaining = BLOCK_TIME - (new Date() - user.ultimo_intento_fallido);
+        const minutesRemaining = Math.ceil(timeRemaining / 60000);
+
+        if (timeRemaining > 0) {
+          return res.status(400).json({
+            success: false,
+            message: `Demasiados intentos fallidos. Por favor, intente nuevamente en ${minutesRemaining} minuto(s).`,
+          });
+        }
+      }
+
       await sendLoginFailEmail(user?.email || 'admin@example.com', 'Usuario o certificado oficial no encontrado');
       return res.status(400).json({ success: false, message: 'Usuario o certificado oficial no encontrado' });
     }
@@ -61,9 +82,34 @@ const login2 = async (req, res) => {
       const [tempHash, storedHash] = verificationResult.split('\n').map((line) => line.split('= ')[1]?.trim());
 
       if (tempHash !== storedHash) {
+        // Incrementar intentos fallidos y actualizar el último intento fallido
+        await user.update({
+          intentos_fallidos: user.intentos_fallidos + 1,
+          ultimo_intento_fallido: new Date(),
+        });
+
+        // Verificar si el número de intentos fallidos supera el máximo permitido
+        if (user.intentos_fallidos >= MAX_FAILED_ATTEMPTS) {
+          const timeRemaining = BLOCK_TIME - (new Date() - user.ultimo_intento_fallido);
+          const minutesRemaining = Math.ceil(timeRemaining / 60000);
+
+          if (timeRemaining > 0) {
+            return res.status(400).json({
+              success: false,
+              message: `Demasiados intentos fallidos. Por favor, intente nuevamente en ${minutesRemaining} minuto(s).`,
+            });
+          }
+        }
+
         await sendLoginFailEmail(user.email, 'Certificado inválido o no coincide');
         return res.status(400).json({ success: false, message: 'Certificado inválido o no coincide' });
       }
+
+      // Si el certificado es válido, reiniciar los intentos fallidos
+      await user.update({
+        intentos_fallidos: 0,
+        ultimo_intento_fallido: null,
+      });
 
       // Certificado válido, proceder con OTP
       const otp = otpGenerator.generate(6, { digits: true });
@@ -74,7 +120,7 @@ const login2 = async (req, res) => {
       return res.json({
         success: true,
         message: 'OTP enviado al correo',
-        role: user.role,
+        role: user.rol, // Aquí devolvemos el rol del usuario
       });
     } finally {
       // Limpiar archivos temporales
@@ -87,7 +133,8 @@ const login2 = async (req, res) => {
   }
 };
 
-const login = async (req, res) => {
+
+const login2 = async (req, res) => {
   try {
     const { cedula } = req.body;
     const certificado = req.files?.certificado;

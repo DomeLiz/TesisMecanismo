@@ -5,11 +5,12 @@ import axios from 'axios';
 const Login = () => {
   const [cedula, setCedula] = useState('');
   const [certificado, setCertificado] = useState(null); // Nuevo estado para el certificado
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(null); // Estado de error
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
     if (!certificado) {
       setError('Debe seleccionar un certificado');
       return;
@@ -45,7 +46,20 @@ const Login = () => {
         },
       });
     } catch (error) {
-      setError('Error en el inicio de sesión');
+      // Aquí se gestionan los errores del backend
+      if (error.response) {
+        const { message } = error.response.data;
+
+        // Si el error está relacionado con los intentos fallidos
+        if (message.includes('Demasiados intentos fallidos')) {
+          setError(message);
+        } else {
+          setError('Error en el inicio de sesión');
+        }
+      } else {
+        setError('Error de conexión al servidor');
+      }
+
       console.error('Error en el login:', error);
     }
   };
@@ -70,7 +84,7 @@ const Login = () => {
           required
         />
         <button type="submit">Iniciar sesión</button>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {error && <p style={{ color: 'red' }}>{error}</p>} {/* Mostrar el mensaje de error */}
       </form>
     </div>
   );
