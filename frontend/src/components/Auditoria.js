@@ -51,6 +51,7 @@ const Auditoria = () => {
         <ul>
           <li><button onClick={() => navigate('/inicio-admin')}>Inicio</button></li>
           <li><button onClick={() => navigate('/gestion-usuario')}>Gestión de usuarios</button></li>
+          <li><button onClick={() => navigate('/actualizar-datos')}>Actualizar Datos</button></li>
           <li><button onClick={() => navigate('/auditoria')}>Registro de auditoria</button></li>
           <li><button onClick={handleLogout}>Cerrar sesión</button></li>
         </ul>

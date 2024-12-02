@@ -170,7 +170,23 @@ const getCustodiados = async (req, res) => {
   }
 };
 
+// En el controlador
+const validateCustodian = async (req, res) => {
+  try {
+    const { cedula, custodioId } = req.body;
 
+    if (!cedula || !custodioId) {
+      throw new Error('La cédula y el ID del custodio son requeridos');
+    }
+
+    // Llamamos al servicio para validar la relación entre el usuario y el custodio
+    const result = await service.validateCustodian(cedula, custodioId);
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
    
 
 module.exports = {
@@ -185,5 +201,6 @@ module.exports = {
   eliminarCustodio,
   sendOtp,
   verifyOtp,
-  getCustodiados
+  getCustodiados,
+  validateCustodian
 };

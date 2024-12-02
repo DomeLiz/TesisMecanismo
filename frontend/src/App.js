@@ -14,6 +14,7 @@ import Datos from './components/Datos';
 import AdminVerifyOTP from './components/AdminVerifyOTP';
 import DatosCustodiados from './components/DatosCustodiados';
 import EditarDatosCustodiados from './components/EditarDatosCustodiados';
+import ActualizarUsuario from './components/ActualizarUsuario';
 
 function App() {
   return (
@@ -36,7 +37,8 @@ function App() {
           <Route path="/inicio-admin" element={<InicioAdmin />} />
           <Route path="/admin-verify-otp" element={<AdminVerifyOTP />} />
           <Route path="/datos-custodiados" element={<DatosCustodiados />} />
-          <Route path="/editar-datos-custodiados" element={<EditarDatosCustodiados />} />     
+          <Route path="/editar-datos-custodiados" element={<EditarDatosCustodiados />} />  
+          <Route path="/actualizar-datos" element={<ActualizarUsuario />} />     
         </Routes>
       </div>
     </Router>

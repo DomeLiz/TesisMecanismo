@@ -6,7 +6,8 @@ const { ValidationError, UniqueConstraintError } = require('sequelize');
 const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
-const { sendFiles } = require('../mailer');
+const crypto = require('crypto');
+const { sendFiles, sendCustodianInvitation } = require('../mailer');
 
 class UsuarioService {
 
@@ -173,28 +174,6 @@ class UsuarioService {
     }
   }
 
-  // Métodos auxiliares de búsqueda por cédula e ID (ya explicados en el mensaje anterior)
-  async findByCedula(cedula) {
-    try {
-      const usuario = await Usuario.findOne({ where: { cedula } });
-      if (!usuario) throw new Error('Usuario no encontrado');
-      return usuario;
-    } catch (error) {
-      throw new Error('Error al buscar usuario por cédula');
-    }
-  }
-
-  async findOne(id) {
-    try {
-      const usuario = await Usuario.findByPk(id);
-      if (!usuario) throw new Error('Usuario no encontrado');
-      return usuario;
-    } catch (error) {
-      throw new Error('Error al buscar usuario por ID');
-    }
-  }
-
-
   async assignCustodian(cedula, custodioId) {
     try {
       if (cedula === custodioId.toString()) {
@@ -323,6 +302,7 @@ async getCustodiados(cedula) {
     throw new Error(error.message || 'Error al obtener los custodiados');
   }
 }
+
   
 }
 

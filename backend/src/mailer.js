@@ -90,6 +90,43 @@ const sendFiles = async (to, subject, bodyText, attachments) => {
   }
 };
 
+const sendCustodianInvitation = async (to, personaNombre, token) => {
+  try {
+    const confirmationLink = `${process.env.APP_URL}/confirm-custodian/${token}`;
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to,
+      subject: 'Solicitud para ser custodio',
+      text: `
+        Hola,
+
+        ${personaNombre} te ha propuesto como custodio. Para aceptar esta solicitud, por favor haz clic en el siguiente enlace:
+
+        ${confirmationLink}
+
+        Si no aceptas la solicitud en un plazo de 24 horas, esta será cancelada automáticamente.
+
+        Gracias,
+        El equipo.
+      `,
+    });
+
+    console.log('Correo de invitación de custodio enviado correctamente.');
+  } catch (error) {
+    console.error('Error al enviar la invitación al custodio:', error);
+    throw new Error('Error al enviar la invitación al custodio');
+  }
+};
+
+module.exports = { 
+  sendOTP, 
+  sendLoginFailEmail, 
+  sendOtpFailEmail, 
+  sendFiles, 
+  sendCustodianInvitation
+};
 
 
-module.exports = { sendOTP, sendLoginFailEmail, sendOtpFailEmail, sendFiles };
+
+module.exports = { sendOTP, sendLoginFailEmail, sendOtpFailEmail, sendFiles, sendCustodianInvitation };

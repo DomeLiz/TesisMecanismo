@@ -1,31 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const GestionUsuarios = () => {
-  const [persons, setPersons] = useState([]);
+  const [formData, setFormData] = useState({
+    nombre: '',
+    apellido: '',
+    email: '',
+    telefono: '',
+    cedula: '',
+    direccion: '',
+    fecha_nacimiento: '',
+    username: '',
+    password: '',
+    rol: '',
+    nivel_confidencialidad: '',
+  });
+  const [successMessage, setSuccessMessage] = useState(''); // Estado para el mensaje de éxito
   const [error, setError] = useState(null);
-  const [formData, setFormData] = useState({ name: '', address: '', phone: '', email: '', cedula: '', password: '' });
-  const [editingId, setEditingId] = useState(null); // ID de la persona que está siendo editada
   const navigate = useNavigate();
-
-  const fetchPersons = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:3000/api/v1/persons', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      setPersons(response.data);
-    } catch (error) {
-      setError(error.response ? `Error: ${error.response.status} - ${error.response.statusText}` : 'Error al obtener datos');
-    }
-  };
-
-  useEffect(() => {
-    fetchPersons();
-  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -35,45 +28,27 @@ const GestionUsuarios = () => {
   const handleCreate = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:3000/api/v1/persons', formData, {
-        headers: { Authorization: `Bearer ${token}` }
+      await axios.post('http://localhost:3000/api/v1/usuarios/register', formData, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      alert('Usuario registrado correctamente');
-      setFormData({ name: '', address: '', phone: '', email: '', cedula: '', password: '' });
-      fetchPersons(); // Actualiza la lista de personas
+      setSuccessMessage('Usuario registrado con éxito'); // Establece el mensaje de éxito
+      setFormData({
+        nombre: '',
+        apellido: '',
+        email: '',
+        telefono: '',
+        cedula: '',
+        direccion: '',
+        fecha_nacimiento: '',
+        username: '',
+        password: '',
+        rol: '',
+        nivel_confidencialidad: '',
+      });
+      setError(null); // Limpia cualquier error previo
     } catch (error) {
       setError(error.response ? error.response.data.message : 'Error al registrar usuario');
-    }
-  };
-
-
-  const handleUpdate = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:3000/api/v1/persons/${editingId}`, formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      alert('Usuario actualizado correctamente');
-      setEditingId(null);
-      setFormData({ name: '', address: '', phone: '', email: '', cedula: '', password: '' });
-      fetchPersons(); // Actualiza la lista de personas
-    } catch (error) {
-      setError(error.response ? error.response.data.message : 'Error al actualizar usuario');
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
-      try {
-        const token = localStorage.getItem('token');
-        await axios.delete(`http://localhost:3000/api/v1/persons/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        alert('Usuario eliminado correctamente');
-        fetchPersons(); // Actualiza la lista de personas
-      } catch (error) {
-        setError(error.response ? error.response.data.message : 'Error al eliminar usuario');
-      }
+      setSuccessMessage(''); // Limpia el mensaje de éxito en caso de error
     }
   };
 
@@ -87,34 +62,54 @@ const GestionUsuarios = () => {
       <nav className="menu-lateral">
         <h2>Menú</h2>
         <ul>
-          <li><button onClick={() => navigate('/inicio-admin')}>Inicio</button></li>
-          <li><button onClick={() => navigate('/gestion-usuario')}>Gestión de usuarios</button></li>
-          <li><button onClick={() => navigate('/auditoria')}>Registro de auditoria</button></li>
-          <li><button onClick={handleLogout}>Cerrar sesión</button></li>
+          <li>
+            <button onClick={() => navigate('/inicio-admin')}>Inicio</button>
+          </li>
+          <li>
+            <button onClick={() => navigate('/gestion-usuario')}>Gestión de usuarios</button>
+          </li>
+          <li>
+            <button onClick={() => navigate('/actualizar-datos')}>Actualizar Datos</button>
+          </li>
+          <li>
+            <button onClick={() => navigate('/auditoria')}>Registro de auditoría</button>
+          </li>
+          <li>
+            <button onClick={handleLogout}>Cerrar sesión</button>
+          </li>
         </ul>
       </nav>
       <main className="contenido-principal">
-        <h2>Lista de Personas</h2>
-        {error && <p>{error}</p>}
-        <ul>
-          {persons.map(person => (
-            <li key={person.id}>
-              {person.name}- {person.email} - {person.cedula}
-             
-              <button onClick={() => handleDelete(person.id)}>Eliminar</button>
-            </li>
-          ))}
-        </ul>
-
-        <h3>{editingId ? 'Modificar Usuario' : 'Registrar Usuario'}</h3>
-        <form onSubmit={(e) => { e.preventDefault(); editingId ? handleUpdate() : handleCreate(); }}>
-          <input type="text" name="name" placeholder="Nombre" value={formData.name} onChange={handleInputChange} required />
-          <input type="text" name="address" placeholder="Dirección" value={formData.address} onChange={handleInputChange} required />
-          <input type="text" name="phone" placeholder="Teléfono" value={formData.phone} onChange={handleInputChange} required />
+        <h3>Registrar Usuario</h3>
+        {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>} {/* Mensaje de éxito */}
+        {error && <p style={{ color: 'red' }}>{error}</p>} {/* Mensaje de error */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleCreate();
+          }}
+        >
+          <input type="text" name="nombre" placeholder="Nombre" value={formData.nombre} onChange={handleInputChange} required />
+          <input type="text" name="apellido" placeholder="Apellido" value={formData.apellido} onChange={handleInputChange} required />
           <input type="email" name="email" placeholder="Correo" value={formData.email} onChange={handleInputChange} required />
+          <input type="text" name="telefono" placeholder="Teléfono" value={formData.telefono} onChange={handleInputChange} required />
           <input type="text" name="cedula" placeholder="Cédula" value={formData.cedula} onChange={handleInputChange} required />
-          <input type="password" name="password" placeholder="Contraseña" value={formData.password} onChange={handleInputChange} required={!editingId} />
-          <button type="submit">{editingId ? 'Modificar' : 'Registrar'}</button>
+          <input type="text" name="direccion" placeholder="Dirección" value={formData.direccion} onChange={handleInputChange} required />
+          <input type="date" name="fecha_nacimiento" placeholder="Fecha de Nacimiento" value={formData.fecha_nacimiento} onChange={handleInputChange} required />
+          <input type="text" name="username" placeholder="Nombre de Usuario" value={formData.username} onChange={handleInputChange} required />
+          <input type="password" name="password" placeholder="Contraseña" value={formData.password} onChange={handleInputChange} required />
+          <select name="rol" value={formData.rol} onChange={handleInputChange} required>
+            <option value="">Seleccione un Rol</option>
+            <option value="admin">Administrador</option>
+            <option value="user">Usuario</option>
+          </select>
+          <select name="nivel_confidencialidad" value={formData.nivel_confidencialidad} onChange={handleInputChange} required>
+            <option value="">Seleccione Nivel de Confidencialidad</option>
+            <option value="alto">Alto</option>
+            <option value="medio">Medio</option>
+            <option value="bajo">Bajo</option>
+          </select>
+          <button type="submit">Registrar</button>
         </form>
       </main>
     </div>
