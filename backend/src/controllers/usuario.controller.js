@@ -78,7 +78,7 @@ const service = new UsuarioService();
       res.status(400).json({ message: error.message });
     }
   };
-  
+
 
   // Obtener el custodio de un usuario por cédula
   const getCustodian = async (req, res) => {

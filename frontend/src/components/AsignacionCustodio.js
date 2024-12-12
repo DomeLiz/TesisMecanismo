@@ -6,11 +6,13 @@ const AsignacionCustodio = () => {
   const navigate = useNavigate();
   const [cedulaAsignador, setCedulaAsignador] = useState('');
   const [cedulaCustodio, setCedulaCustodio] = useState('');
+  const [otp, setOtp] = useState('');  // Nuevo estado para el OTP
   const [mensajeAsignacion, setMensajeAsignacion] = useState('');
   const [mensajeEliminacion, setMensajeEliminacion] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [custodioActual, setCustodioActual] = useState(null); // Para almacenar al custodio actual
+  const [otpEnviado, setOtpEnviado] = useState(false);  // Estado para controlar si el OTP ha sido enviado
 
   useEffect(() => {
     const cedula = localStorage.getItem('cedula');
@@ -36,6 +38,7 @@ const AsignacionCustodio = () => {
     e.preventDefault();
     setError('');
     setMensajeAsignacion('');
+    setMensajeEliminacion('');
 
     // Validación de entrada
     if (!cedulaCustodio || isNaN(cedulaCustodio)) {
@@ -59,9 +62,37 @@ const AsignacionCustodio = () => {
 
       setMensajeAsignacion(response.data.message || 'Custodio asignado correctamente.');
       setCedulaCustodio('');
-      fetchCustodian(cedulaAsignador);  // Actualizar el custodio después de asignar
+      setOtpEnviado(true);  // Marcar que el OTP ha sido enviado
     } catch (err) {
       setError(err.response?.data?.message || 'Ocurrió un error al asignar el custodio.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otp) {
+      setError('Por favor ingresa el OTP.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await axios.post('http://localhost:3000/api/v1/usuarios/verify-otp', {
+        cedula: cedulaAsignador,
+        otp,
+      });
+
+      if (response.data.success) {
+        setMensajeAsignacion('Custodio asignado correctamente.');
+        setOtp('');
+        setOtpEnviado(false);  // Restablecer estado de OTP
+      } else {
+        setError('El OTP ingresado no es válido.');
+      }
+    } catch (err) {
+      setError('Error al verificar el OTP.');
+      console.error('Error al verificar OTP:', err);
     } finally {
       setLoading(false);
     }
@@ -129,11 +160,29 @@ const AsignacionCustodio = () => {
           </div>
         )}
 
-        <form onSubmit={handleAssignCustodian}>
-          <button type="submit" disabled={loading}>
-            {loading ? 'Procesando...' : 'Asignar Custodio'}
-          </button>
-        </form>
+        {!otpEnviado && (
+          <form onSubmit={handleAssignCustodian}>
+            <button type="submit" disabled={loading}>
+              {loading ? 'Procesando...' : 'Asignar Custodio'}
+            </button>
+          </form>
+        )}
+
+        {otpEnviado && (
+          <div>
+            <label>Ingresa el OTP enviado al custodio</label>
+            <input
+              type="text"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              placeholder="Ingrese el OTP"
+              required
+            />
+            <button onClick={handleVerifyOtp} disabled={loading}>
+              {loading ? 'Verificando...' : 'Verificar OTP'}
+            </button>
+          </div>
+        )}
       </main>
     </div>
   );

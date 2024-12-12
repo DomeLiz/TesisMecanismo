@@ -6,8 +6,10 @@ const { ValidationError, UniqueConstraintError } = require('sequelize');
 const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
-const crypto = require('crypto');
 const { sendFiles, sendCustodianInvitation } = require('../mailer');
+const { sendOTP } = require('../mailer');
+const { OTP } = require('../db/models/OTP');
+
 
 class UsuarioService {
 
@@ -174,7 +176,7 @@ class UsuarioService {
     }
   }
 
-  async assignCustodian(cedula, custodioId) {
+  async assignCustodian2(cedula, custodioId) {
     try {
       if (cedula === custodioId.toString()) {
         throw new Error('El usuario no puede asignarse como su propio custodio');
@@ -206,6 +208,52 @@ class UsuarioService {
       throw new Error(error.message || 'Error al asignar custodio');
     }
   }  
+
+  async verifyOtp(cedula, otp) {
+    try {
+      // Buscar el OTP asociado al usuario por su cédula
+      const otpRecord = await models.OTP.findOne({
+        where: { custodioId: cedula, otp, expiration: { [Sequelize.Op.gt]: new Date() } }, // Verifica que no haya expirado
+      });
+
+      if (!otpRecord) {
+        return { success: false, message: 'OTP inválido o expirado' }; // OTP no válido o expirado
+      }
+
+      // Si llegamos hasta aquí, significa que el OTP es válido
+      return { success: true, message: 'OTP verificado correctamente' };
+    } catch (error) {
+      console.error('Error al verificar OTP:', error);
+      return { success: false, message: 'Error al verificar OTP' };
+    }
+  }
+
+  // El método assignCustodian permanece igual
+  async assignCustodian(cedula, custodioId) {
+    try {
+      // Verificar si el usuario intenta asignarse a sí mismo como custodio
+      if (cedula === custodioId.toString()) {
+        throw new Error('El usuario no puede asignarse como su propio custodio');
+      }
+
+      // Buscar la persona por su cédula
+      const persona = await models.Usuario.findOne({ where: { cedula } });
+      if (!persona) throw new Error('La persona asignada no existe en la base de datos');
+
+      // Verificar si el custodio existe
+      const custodio = await models.Usuario.findByPk(custodioId);
+      if (!custodio) throw new Error('El custodio asignado no existe en la base de datos');
+
+      // Asignar el custodio al usuario
+      persona.idcustodio = custodioId;
+      await persona.save();
+
+      return { message: 'Custodio asignado correctamente' };
+    } catch (error) {
+      throw new Error(error.message || 'Error al asignar custodio');
+    }
+  }
+
   
   // Obtener el custodio de un usuario por cédula
   async getCustodian(cedula) {
