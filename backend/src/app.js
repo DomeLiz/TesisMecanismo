@@ -7,9 +7,9 @@ const routerApi = require('./routes');
 dotenv.config();
 const app = express();
 
-// Configuración de CORS
+// Configuración de CORS para permitir solicitudes desde el frontend en Surge
 app.use(cors({
-    origin: ['http://localhost:3001', 'https://controlpii.surge.sh'],
+    origin: ['http://localhost:3001', 'https://controlaccesopii.surge.sh'],  // Asegúrate de incluir la URL de producción
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -34,5 +34,5 @@ routerApi(app);
 
 // Iniciar servidor
 app.listen(port, () => {
-    console.log("Port ==> ", port);
+    console.log("Server running on port ", port);
 });
