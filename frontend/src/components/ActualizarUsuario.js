@@ -147,14 +147,6 @@ const ActualizarUsuario = () => {
               onChange={handleInputChange}
               required
             />
-            <input
-              type="text"
-              name="username"
-              placeholder="Nombre de Usuario"
-              value={formData.username}
-              onChange={handleInputChange}
-              required
-            />
             <select
               name="rol"
               value={formData.rol}
@@ -164,17 +156,6 @@ const ActualizarUsuario = () => {
               <option value="">Seleccione un Rol</option>
               <option value="admin">Administrador</option>
               <option value="user">Usuario</option>
-            </select>
-            <select
-              name="nivel_confidencialidad"
-              value={formData.nivel_confidencialidad}
-              onChange={handleInputChange}
-              required
-            >
-              <option value="">Seleccione Nivel de Confidencialidad</option>
-              <option value="alto">Alto</option>
-              <option value="medio">Medio</option>
-              <option value="bajo">Bajo</option>
             </select>
             <button type="submit">Actualizar</button>
           </form>

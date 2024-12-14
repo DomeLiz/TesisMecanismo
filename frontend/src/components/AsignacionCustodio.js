@@ -5,20 +5,17 @@ import axios from 'axios';
 const AsignacionCustodio = () => {
   const navigate = useNavigate();
   const [cedulaAsignador, setCedulaAsignador] = useState('');
-  const [cedulaCustodio, setCedulaCustodio] = useState('');
-  const [otp, setOtp] = useState('');  // Nuevo estado para el OTP
-  const [mensajeAsignacion, setMensajeAsignacion] = useState('');
-  const [mensajeEliminacion, setMensajeEliminacion] = useState('');
+  const [custodioId, setCustodioId] = useState('');
+  const [mensaje, setMensaje] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [custodioActual, setCustodioActual] = useState(null); // Para almacenar al custodio actual
-  const [otpEnviado, setOtpEnviado] = useState(false);  // Estado para controlar si el OTP ha sido enviado
+  const [custodioActual, setCustodioActual] = useState(null);
 
   useEffect(() => {
     const cedula = localStorage.getItem('cedula');
     if (cedula) {
       setCedulaAsignador(cedula);
-      fetchCustodian(cedula);  // Obtener el custodio actual al cargar el componente
+      fetchCustodian(cedula);
     } else {
       setError('No se encontró la cédula del asignador en el almacenamiento local.');
     }
@@ -37,62 +34,26 @@ const AsignacionCustodio = () => {
   const handleAssignCustodian = async (e) => {
     e.preventDefault();
     setError('');
-    setMensajeAsignacion('');
-    setMensajeEliminacion('');
+    setMensaje('');
 
-    // Validación de entrada
-    if (!cedulaCustodio || isNaN(cedulaCustodio)) {
+    if (!custodioId || isNaN(custodioId)) {
       setError('Por favor, ingresa un ID válido de custodio.');
       return;
     }
 
     try {
       setLoading(true);
-
-      const payload = {
-        cedula: cedulaAsignador,
-        custodioId: parseInt(cedulaCustodio, 10),
-      };
+      const payload = { cedula: cedulaAsignador, custodioId: parseInt(custodioId, 10) };
 
       const response = await axios.post('http://localhost:3000/api/v1/usuarios/assign-custodian', payload, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
       });
 
-      setMensajeAsignacion(response.data.message || 'Custodio asignado correctamente.');
-      setCedulaCustodio('');
-      setOtpEnviado(true);  // Marcar que el OTP ha sido enviado
+      setMensaje(response.data.message || 'Custodio asignado correctamente.');
+      setCustodioId('');
+      fetchCustodian(cedulaAsignador);
     } catch (err) {
-      setError(err.response?.data?.message || 'Ocurrió un error al asignar el custodio.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    if (!otp) {
-      setError('Por favor ingresa el OTP.');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const response = await axios.post('http://localhost:3000/api/v1/usuarios/verify-otp', {
-        cedula: cedulaAsignador,
-        otp,
-      });
-
-      if (response.data.success) {
-        setMensajeAsignacion('Custodio asignado correctamente.');
-        setOtp('');
-        setOtpEnviado(false);  // Restablecer estado de OTP
-      } else {
-        setError('El OTP ingresado no es válido.');
-      }
-    } catch (err) {
-      setError('Error al verificar el OTP.');
-      console.error('Error al verificar OTP:', err);
+      setError(err.response?.data?.message || 'Error al asignar el custodio.');
     } finally {
       setLoading(false);
     }
@@ -102,8 +63,8 @@ const AsignacionCustodio = () => {
     try {
       setLoading(true);
       const response = await axios.delete(`http://localhost:3000/api/v1/usuarios/eliminar-custodio/${cedulaAsignador}`);
-      setMensajeEliminacion(response.data.message || 'Custodio eliminado correctamente.');
-      setCustodioActual(null);  // Limpiar el custodio en el estado
+      setMensaje(response.data.message || 'Custodio eliminado correctamente.');
+      setCustodioActual(null);
     } catch (err) {
       setError(err.response?.data?.message || 'Ocurrió un error al eliminar el custodio.');
     } finally {
@@ -128,11 +89,11 @@ const AsignacionCustodio = () => {
           <li><button onClick={handleLogout}>Cerrar sesión</button></li>
         </ul>
       </nav>
+
       <main>
         <h1>Asignación de Custodio</h1>
 
-        {mensajeAsignacion && <p style={{ color: 'green' }}>{mensajeAsignacion}</p>}
-        {mensajeEliminacion && <p style={{ color: 'green' }}>{mensajeEliminacion}</p>}
+        {mensaje && <p style={{ color: 'green' }}>{mensaje}</p>}
         {error && <p style={{ color: 'red' }}>{error}</p>}
 
         <div>
@@ -140,46 +101,27 @@ const AsignacionCustodio = () => {
           <input type="text" value={cedulaAsignador || 'No disponible'} readOnly />
         </div>
 
-        <div>
-          <label>ID del Custodio</label>
-          <input
-            type="text"
-            value={cedulaCustodio || (custodioActual ? custodioActual.usuario_id : '')}  // Mostrar el custodio actual si existe
-            onChange={(e) => setCedulaCustodio(e.target.value)}
-            placeholder="Ingrese el id del custodio"
-            required
-          />
-        </div>
+        <form onSubmit={handleAssignCustodian}>
+          <div>
+            <label>ID del Custodio</label>
+            <input
+              type="text"
+              value={custodioId}
+              onChange={(e) => setCustodioId(e.target.value)}
+              placeholder="Ingrese el id del custodio"
+              required
+            />
+          </div>
+          <button type="submit" disabled={loading}>
+            {loading ? 'Asignando...' : 'Asignar Custodio'}
+          </button>
+        </form>
 
         {custodioActual && (
           <div>
             <p><strong>Custodio Actual:</strong> {custodioActual.nombre}</p>
             <button onClick={handleRemoveCustodian} disabled={loading}>
               {loading ? 'Eliminando...' : 'Eliminar Custodio'}
-            </button>
-          </div>
-        )}
-
-        {!otpEnviado && (
-          <form onSubmit={handleAssignCustodian}>
-            <button type="submit" disabled={loading}>
-              {loading ? 'Procesando...' : 'Asignar Custodio'}
-            </button>
-          </form>
-        )}
-
-        {otpEnviado && (
-          <div>
-            <label>Ingresa el OTP enviado al custodio</label>
-            <input
-              type="text"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              placeholder="Ingrese el OTP"
-              required
-            />
-            <button onClick={handleVerifyOtp} disabled={loading}>
-              {loading ? 'Verificando...' : 'Verificar OTP'}
             </button>
           </div>
         )}

@@ -176,39 +176,6 @@ class UsuarioService {
     }
   }
 
-  async assignCustodian2(cedula, custodioId) {
-    try {
-      if (cedula === custodioId.toString()) {
-        throw new Error('El usuario no puede asignarse como su propio custodio');
-      }
-  
-      // Buscar la persona por su cedula (cedula es un campo varchar)
-      const persona = await models.Usuario.findOne({ where: { cedula } });
-      if (!persona) throw new Error('La persona asignada no existe en la base de datos');
-  
-      // Verificar si el custodio existe (custodioId es un entero)
-      const custodio = await models.Usuario.findByPk(custodioId);
-      if (!custodio) throw new Error('El custodio asignado no existe en la base de datos');
-  
-      // Actualizar el campo idcustodio de la persona
-      persona.idcustodio = custodioId;
-      await persona.save();
-  
-      // Cambiar el rol del custodio a "custodio"
-      custodio.rol = 'custodio';
-      await custodio.save();
-  
-      return {
-        message: 'Custodio asignado correctamente',
-        persona: persona.toJSON(),
-        custodio: custodio.toJSON(),
-      };
-    } catch (error) {
-      console.error('Error en assignCustodian:', error);
-      throw new Error(error.message || 'Error al asignar custodio');
-    }
-  }  
-
   async verifyOtp(cedula, otp) {
     try {
       // Buscar el OTP asociado al usuario por su cédula
@@ -227,33 +194,6 @@ class UsuarioService {
       return { success: false, message: 'Error al verificar OTP' };
     }
   }
-
-  // El método assignCustodian permanece igual
-  async assignCustodian(cedula, custodioId) {
-    try {
-      // Verificar si el usuario intenta asignarse a sí mismo como custodio
-      if (cedula === custodioId.toString()) {
-        throw new Error('El usuario no puede asignarse como su propio custodio');
-      }
-
-      // Buscar la persona por su cédula
-      const persona = await models.Usuario.findOne({ where: { cedula } });
-      if (!persona) throw new Error('La persona asignada no existe en la base de datos');
-
-      // Verificar si el custodio existe
-      const custodio = await models.Usuario.findByPk(custodioId);
-      if (!custodio) throw new Error('El custodio asignado no existe en la base de datos');
-
-      // Asignar el custodio al usuario
-      persona.idcustodio = custodioId;
-      await persona.save();
-
-      return { message: 'Custodio asignado correctamente' };
-    } catch (error) {
-      throw new Error(error.message || 'Error al asignar custodio');
-    }
-  }
-
   
   // Obtener el custodio de un usuario por cédula
   async getCustodian(cedula) {
@@ -351,7 +291,52 @@ async getCustodiados(cedula) {
   }
 }
 
-  
+// El método assignCustodian permanece igual
+async assignCustodian(cedula, custodioId) {
+  try {
+    // Validar que los parámetros sean correctos
+    if (!cedula || !custodioId) {
+      throw new Error('Cédula y custodioId son requeridos');
+    }
+
+    // Buscar al usuario por su cédula
+    const persona = await models.Usuario.findOne({ where: { cedula } });
+    if (!persona) {
+      throw new Error('No se encontró un usuario con la cédula proporcionada');
+    }
+
+    // Buscar al custodio por su ID
+    const custodio = await models.Usuario.findOne({ where: { usuario_id: custodioId } });
+    if (!custodio) {
+      throw new Error('No se encontró un custodio con el ID proporcionado');
+    }
+
+    // Verificar si el usuario intenta asignarse a sí mismo como custodio
+    if (persona.usuario_id === custodio.usuario_id) {
+      throw new Error('El usuario no puede asignarse a sí mismo como custodio');
+    }
+
+    // Asignar el custodio al usuario
+    persona.idcustodio = custodioId;
+    await persona.save();
+
+    // Devolver un mensaje de éxito
+    return {
+      message: 'Custodio asignado correctamente',
+      persona: {
+        usuario_id: persona.usuario_id,
+        nombre: persona.nombre,
+        apellido: persona.apellido,
+        cedula: persona.cedula,
+        idcustodio: persona.idcustodio,
+      },
+    };
+  } catch (error) {
+    // Manejo de errores y devolución de mensaje
+    return { error: error.message || 'Error al asignar custodio' };
+  }
+}
+ 
 }
 
 

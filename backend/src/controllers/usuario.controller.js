@@ -70,15 +70,30 @@ const service = new UsuarioService();
     try {
       const { cedula, custodioId } = req.body;
   
-      // Llama al servicio para asignar el custodio
+      // Validar que los datos requeridos están presentes
+      if (!cedula || !custodioId) {
+        return res.status(400).json({ message: 'Cédula y custodioId son requeridos' });
+      }
+  
+      // Llamar al método de asignación del servicio
       const result = await service.assignCustodian(cedula, custodioId);
   
-      res.status(200).json(result);
+      // Verificar si el servicio devolvió un error
+      if (result.error) {
+        return res.status(400).json({ message: result.error });
+      }
+  
+      // Responder con éxito
+      return res.status(200).json({ message: result.message, data: result.persona });
     } catch (error) {
-      res.status(400).json({ message: error.message });
+      // Capturar errores no esperados
+      return res.status(500).json({ message: error.message || 'Error interno del servidor' });
     }
   };
+  
 
+  
+  
 
   // Obtener el custodio de un usuario por cédula
   const getCustodian = async (req, res) => {
