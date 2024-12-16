@@ -5,16 +5,14 @@ const UsuarioService = require('../service/usuario.service');
 const usuarioService = new UsuarioService();
 const otpGenerator = require('otp-generator');
 const { sendOTP, sendLoginFailEmail, sendOtpFailEmail } = require('../mailer');
-const { exec } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const crypto = require('crypto');
 
 const otpStore = {}; 
 
 const MAX_FAILED_ATTEMPTS = 3; // Número máximo de intentos fallidos permitidos
-const BLOCK_TIME = 2 * 60 * 1000; // Tiempo de bloqueo en milisegundos (15 minutos)
+const BLOCK_TIME = 2 * 60 * 1000; // Tiempo de bloqueo en milisegundos (2 minutos)
 
-// Método de login con intento fallido y control de bloqueo
+// Método de login optimizado
 const login = async (req, res) => {
   try {
     const { cedula } = req.body;
@@ -33,103 +31,68 @@ const login = async (req, res) => {
     }
 
     const user = await usuarioService.findByCedula(cedula);
-
     if (!user) {
       return res.status(400).json({ success: false, message: 'Usuario no encontrado' });
     }
 
-    // Verificar estado del usuario
+    // Verificar estado del usuario (bloqueo temporal)
     const now = Date.now();
     const lastFailedAttempt = new Date(user.ultimo_intento_fallido).getTime();
     const timeSinceLastFailedAttempt = now - lastFailedAttempt;
 
-    if (!user.estado) {
-      // Bloqueado: verificar si el tiempo de bloqueo ha terminado
-      if (timeSinceLastFailedAttempt >= BLOCK_TIME) {
-        // Desbloquear la cuenta automáticamente
-        await user.update({ estado: true, intentos_fallidos: 0, ultimo_intento_fallido: null });
-      } else {
-        const timeRemaining = Math.ceil((BLOCK_TIME - timeSinceLastFailedAttempt) / 60000); // Minutos restantes
+    if (!user.estado && timeSinceLastFailedAttempt < BLOCK_TIME) {
+      const timeRemaining = Math.ceil((BLOCK_TIME - timeSinceLastFailedAttempt) / 60000);
+      return res.status(400).json({
+        success: false,
+        message: `Tu cuenta está bloqueada. Inténtalo de nuevo en ${timeRemaining} minuto(s).`,
+      });
+    }
+
+    // Comparar certificado en memoria usando hash MD5
+    const tempCertHash = crypto.createHash('md5').update(certificado.data).digest('hex');
+    const storedCertHash = crypto.createHash('md5').update(user.certificado).digest('hex');
+
+    if (tempCertHash !== storedCertHash) {
+      // Incrementar intentos fallidos
+      const failedAttempts = user.intentos_fallidos + 1;
+      await user.update({
+        intentos_fallidos: failedAttempts,
+        ultimo_intento_fallido: new Date(),
+        estado: failedAttempts >= MAX_FAILED_ATTEMPTS ? false : user.estado,
+      });
+
+      if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
         return res.status(400).json({
           success: false,
-          message: `Tu cuenta está bloqueada. Inténtalo de nuevo en ${timeRemaining} minuto(s).`,
+          message: 'Demasiados intentos fallidos. Tu cuenta está bloqueada por 2 minutos.',
         });
       }
+
+      return res.status(400).json({ success: false, message: 'Certificado inválido o no coincide.' });
     }
 
-    // Si el usuario no está bloqueado, procesar el certificado
-    const tempDir = path.resolve('C:\\temp\\certificates');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
+    // Restablecer intentos fallidos
+    await user.update({ intentos_fallidos: 0, ultimo_intento_fallido: null });
 
-    const tempCertPath = path.join(tempDir, `${cedula}.der`);
-    const officialCertPath = path.join(tempDir, `${cedula}_official.der`);
+    // Generar OTP
+    const otp = otpGenerator.generate(6, { digits: true });
+    otpStore[cedula] = otp;
 
-    try {
-      fs.writeFileSync(tempCertPath, certificado.data);
-      fs.writeFileSync(officialCertPath, user.certificado);
+    // Enviar OTP al correo
+    await sendOTP(user.email, otp);
 
-      const verifyCommand = `openssl x509 -inform DER -in "${tempCertPath}" -noout -modulus | openssl md5 && openssl x509 -inform DER -in "${officialCertPath}" -noout -modulus | openssl md5`;
-      const verificationResult = await new Promise((resolve, reject) => {
-        exec(verifyCommand, (error, stdout, stderr) => {
-          if (error) return reject(stderr);
-          resolve(stdout.trim());
-        });
-      });
-
-      const [tempHash, storedHash] = verificationResult.split('\n').map((line) => line.split('= ')[1]?.trim());
-
-      if (tempHash !== storedHash) {
-        // Incrementar intentos fallidos y registrar el tiempo
-        const updatedUser = await user.update({
-          intentos_fallidos: user.intentos_fallidos + 1,
-          ultimo_intento_fallido: new Date(),
-        });
-
-        // Verificar si alcanza el máximo de intentos
-        if (updatedUser.intentos_fallidos >= MAX_FAILED_ATTEMPTS) {
-          // Bloquear la cuenta temporalmente
-          await user.update({ estado: false });
-          return res.status(400).json({
-            success: false,
-            message: `Demasiados intentos fallidos. Tu cuenta está bloqueada por 2 minutos.`,
-          });
-        }
-
-        return res.status(400).json({ success: false, message: 'Certificado inválido o no coincide.' });
-      }
-
-      // Certificado válido: reiniciar intentos fallidos
-      await user.update({
-        intentos_fallidos: 0,
-        ultimo_intento_fallido: null,
-      });
-
-      // Enviar OTP y continuar con el proceso
-      const otp = otpGenerator.generate(6, { digits: true });
-      otpStore[cedula] = otp;
-
-      await sendOTP(user.email, otp);
-
-      return res.json({
-        success: true,
-        message: 'OTP enviado al correo',
-        role: user.rol, // Devolver el rol del usuario
-      });
-    } finally {
-      // Eliminar archivos temporales
-      if (fs.existsSync(tempCertPath)) fs.unlinkSync(tempCertPath);
-      if (fs.existsSync(officialCertPath)) fs.unlinkSync(officialCertPath);
-    }
+    return res.json({
+      success: true,
+      message: 'OTP enviado al correo',
+      role: user.rol,
+    });
   } catch (error) {
     console.error('Error en login:', error);
     res.status(500).json({ success: false, message: 'Error en el servidor' });
   }
 };
 
-
-// Verificar OTP
+// Método para verificar OTP
 const verifyOTP = async (req, res) => {
   try {
     const { cedula, otp } = req.body;
@@ -154,6 +117,5 @@ const verifyOTP = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
 
 module.exports = { login, verifyOTP };
