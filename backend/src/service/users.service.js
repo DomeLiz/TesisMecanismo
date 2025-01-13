@@ -15,6 +15,11 @@ class UserService {
     return user;
   }
 
+  async findByEmail(email) { // Buscar por email
+    const user = await models.Usuario.findOne({ where: { email } });
+    return user;
+  }
+
   async validatePassword(plainPassword, hashedPassword) {
     return bcrypt.compare(plainPassword, hashedPassword);
   }

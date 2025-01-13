@@ -118,4 +118,55 @@ const verifyOTP = async (req, res) => {
   }
 };
 
-module.exports = { login, verifyOTP };
+// Método para enviar OTP al custodiado
+const sendOtpToCustodiado = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Correo electrónico no proporcionado.' });
+    }
+
+    const user = await userservice.findByEmail(email);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado con ese correo.' });
+    }
+
+    const otp = otpGenerator.generate(6, { digits: true });
+    otpStore[email] = otp;
+
+    await sendOTP(email, otp);
+
+    res.json({ success: true, message: 'OTP enviado al correo.' });
+  } catch (error) {
+    console.error('Error enviando OTP:', error);
+    res.status(500).json({ success: false, message: 'Hubo un error al enviar el OTP.' });
+  }
+};
+
+// Método para verificar OTP del custodiado
+const verifyOtpToCustodiado = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, message: 'Correo y OTP son requeridos.' });
+    }
+
+    if (otpStore[email] === otp) {
+      // Eliminar OTP tras verificación exitosa
+      delete otpStore[email];
+
+      res.json({ success: true, message: 'OTP verificado exitosamente.' });
+    } else {
+      res.status(400).json({ success: false, message: 'OTP incorrecto o expirado.' });
+    }
+  } catch (error) {
+    console.error('Error verificando OTP del custodiado:', error);
+    res.status(500).json({ success: false, message: 'Error en el servidor.' });
+  }
+};
+
+
+module.exports = { login, verifyOTP, sendOtpToCustodiado, verifyOtpToCustodiado };

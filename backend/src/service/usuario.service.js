@@ -27,15 +27,14 @@ class UsuarioService {
       rol,
       nivel_confidencialidad,
     } = data;
-  
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const tempDir = path.resolve('C:\\temp\\certificates', username);
-  
+
     try {
-      if (!fs.existsSync(tempDir)) {
-        fs.mkdirSync(tempDir, { recursive: true });
-      }
-  
+      // Crear directorio temporal para certificados
+      if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+
       const newUser = await Usuario.create({
         nombre,
         apellido,
@@ -51,67 +50,53 @@ class UsuarioService {
         rol,
         nivel_confidencialidad,
       });
-  
+
       const privateKeyPath = path.join(tempDir, 'private.key');
       const csrPath = path.join(tempDir, 'request.csr');
       const certPath = path.join(tempDir, 'certificate.der');
-  
-      // Comandos OpenSSL
+
       const commands = [
-        // Generar clave privada
         `openssl genpkey -algorithm RSA -out "${privateKeyPath}" -pkeyopt rsa_keygen_bits:2048`,
-        // Crear CSR (Certificate Signing Request)
         `openssl req -new -key "${privateKeyPath}" -out "${csrPath}" -subj "/C=EC/ST=Pichincha/L=Quito/O=EPN/CN=${username}"`,
-        // Generar certificado a partir del CSR (autofirmado, válido por 1 año)
         `openssl x509 -req -days 365 -in "${csrPath}" -signkey "${privateKeyPath}" -outform DER -out "${certPath}"`,
       ];
-  
+
       for (const command of commands) {
-        console.log(`Ejecutando comando: ${command}`);
         await new Promise((resolve, reject) => {
           exec(command, (error, stdout, stderr) => {
-            if (error) {
-              console.error(`Error ejecutando OpenSSL: ${stderr}`);
-              return reject(error);
-            }
-            console.log(`Comando ejecutado exitosamente: ${stdout}`);
+            if (error) return reject(error);
             resolve();
           });
         });
       }
-  
-      console.log('Verificando archivos generados...');
-      if (!fs.existsSync(certPath)) throw new Error(`Certificado no encontrado: ${certPath}`);
-      if (!fs.existsSync(privateKeyPath)) throw new Error(`Clave privada no encontrada: ${privateKeyPath}`);
-  
+
+      if (!fs.existsSync(certPath) || !fs.existsSync(privateKeyPath)) {
+        throw new Error('Error generando certificados');
+      }
+
       const certificado = fs.readFileSync(certPath);
       const claveprivada = fs.readFileSync(privateKeyPath);
-  
-      await newUser.update({
-        certificado,
-        claveprivada,
-      });
-  
+
+      await newUser.update({ certificado, claveprivada });
+
       await sendFiles(
         email,
         'Tus Certificados Digitales',
-        `Hola ${nombre} ${apellido},\n\nAdjunto encontrarás tus certificados digitales generados. Por favor, guárdalos en un lugar seguro.`,
+        `Hola ${nombre} ${apellido},\nAdjunto encontrarás tus certificados digitales.`,
         [
           { filename: 'certificado.der', content: certificado },
           { filename: 'claveprivada.key', content: claveprivada },
         ]
       );
-  
-      console.log('Limpiando archivos temporales...');
+
       fs.rmSync(tempDir, { recursive: true, force: true });
-  
+
       return newUser;
     } catch (error) {
       console.error('Error al crear el usuario:', error);
       throw new Error('Error al crear el usuario: ' + error.message);
     }
   }
-  
 
   async find() {
     try {
