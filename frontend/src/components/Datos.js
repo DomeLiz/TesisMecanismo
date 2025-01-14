@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 const Datos = () => {
     const [personData, setPersonData] = useState(null);
     const cedula = localStorage.getItem('cedula'); // Obtener la cédula desde localStorage
-    const usuario_id = localStorage.getItem('usuario_id');
     const token = localStorage.getItem('token'); // Obtener el token desde localStorage
     const navigate = useNavigate(); // Usar useNavigate para la navegación
 
@@ -45,6 +44,7 @@ const Datos = () => {
                 <li><button onClick={() => navigate('/datos')}>Datos</button></li>
                 <li><button onClick={() => navigate('/asignacion-custodio')}>Asignación de Custodio</button></li>
                 <li><button onClick={() => navigate('/datos-custodiados')}>Datos Custodiados</button></li>
+                <li><button onClick={() => navigate('/eliminar-datos')}>Eliminar Datos Custodiados</button></li>
                 <li><button onClick={handleLogout}>Cerrar sesión</button></li>
                 </ul>
             </nav>

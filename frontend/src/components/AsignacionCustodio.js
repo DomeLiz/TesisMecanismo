@@ -79,13 +79,14 @@ const AsignacionCustodio = () => {
 
   return (
     <div className="asignacion-custodio-container">
-      <nav className="menu-lateral">
+      <nav className="menu-lateral"> 
         <h2>Menú</h2>
         <ul>
           <li><button onClick={() => navigate('/inicio')}>Inicio</button></li>
           <li><button onClick={() => navigate('/datos')}>Datos</button></li>
           <li><button onClick={() => navigate('/asignacion-custodio')}>Asignación de Custodio</button></li>
           <li><button onClick={() => navigate('/datos-custodiados')}>Datos Custodiados</button></li>
+          <li><button onClick={() => navigate('/eliminar-datos')}>Eliminar Datos Custodiados</button></li>
           <li><button onClick={handleLogout}>Cerrar sesión</button></li>
         </ul>
       </nav>

@@ -21,6 +21,7 @@ const Inicio = () => {
           <li><button onClick={() => navigate('/datos')}>Datos</button></li>
           <li><button onClick={() => navigate('/asignacion-custodio')}>Asignación de Custodio</button></li>
           <li><button onClick={() => navigate('/datos-custodiados')}>Datos Custodiados</button></li>
+          <li><button onClick={() => navigate('/eliminar-datos')}>Eliminar Datos Custodiados</button></li>
           <li><button onClick={handleLogout}>Cerrar sesión</button></li>
         </ul>
       </nav>

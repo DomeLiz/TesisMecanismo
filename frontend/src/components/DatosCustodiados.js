@@ -73,6 +73,7 @@ const DatosCustodiados = () => {
                     <li><button onClick={() => navigate('/datos')}>Datos</button></li>
                     <li><button onClick={() => navigate('/asignacion-custodio')}>Asignación de Custodio</button></li>
                     <li><button onClick={() => navigate('/datos-custodiados')}>Datos Custodiados</button></li>
+                    <li><button onClick={() => navigate('/eliminar-datos')}>Eliminar Datos Custodiados</button></li>
                     <li><button onClick={handleLogout}>Cerrar sesión</button></li>
                 </ul>
             </nav>
@@ -83,11 +84,6 @@ const DatosCustodiados = () => {
                         <p><strong>ID:</strong> {personData.usuario_id}</p>
                         <p><strong>Nombre:</strong> {personData.nombre}</p>
                         <p><strong>Apellido:</strong> {personData.apellido}</p>
-                        <p><strong>Correo:</strong> {personData.email}</p>
-                        <p><strong>Teléfono:</strong> {personData.telefono}</p>
-                        <p><strong>Cédula:</strong> {personData.cedula}</p>
-                        <p><strong>Dirección:</strong> {personData.direccion}</p>
-                        <p><strong>Fecha de Nacimiento:</strong> {personData.fecha_nacimiento}</p>
                     </div>
                 ) : (
                     <p>Cargando datos...</p>
@@ -103,7 +99,6 @@ const DatosCustodiados = () => {
                             <p><strong>Teléfono:</strong> {custodiado.telefono}</p>
                             <p><strong>Correo:</strong> {custodiado.email}</p>
                             <p><strong>Cédula:</strong> {custodiado.cedula}</p>
-                            <p><strong>Asignado por el custodio:</strong> {custodiado.idcustodio}</p>
                             <button onClick={() => handleEditClick(custodiado)}>Editar Datos</button>
                             <br />
                         </div>
