@@ -95,18 +95,13 @@ const GestionUsuarios = () => {
           <input type="text" name="direccion" placeholder="Dirección" value={formData.direccion} onChange={handleInputChange} required />
           <input type="date" name="fecha_nacimiento" placeholder="Fecha de Nacimiento" value={formData.fecha_nacimiento} onChange={handleInputChange} required />
           <input type="text" name="username" placeholder="Nombre de Usuario" value={formData.username} onChange={handleInputChange} required />
-          <input type="password" name="password" placeholder="Contraseña" value={formData.password} onChange={handleInputChange} required />
+         
           <select name="rol" value={formData.rol} onChange={handleInputChange} required>
             <option value="">Seleccione un Rol</option>
             <option value="admin">Administrador</option>
             <option value="user">Usuario</option>
           </select>
-          <select name="nivel_confidencialidad" value={formData.nivel_confidencialidad} onChange={handleInputChange} required>
-            <option value="">Seleccione Nivel de Confidencialidad</option>
-            <option value="alto">Alto</option>
-            <option value="medio">Medio</option>
-            <option value="bajo">Bajo</option>
-          </select>
+          
           <button type="submit">Registrar</button>
         </form>
       </main>
