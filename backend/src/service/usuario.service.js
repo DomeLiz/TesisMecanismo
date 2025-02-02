@@ -32,7 +32,6 @@ class UsuarioService {
     const tempDir = path.resolve('C:\\temp\\certificates', username);
 
     try {
-      // Crear directorio temporal para certificados
       if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
 
       const newUser = await Usuario.create({
@@ -139,8 +138,8 @@ class UsuarioService {
   async update(cedula, data) {
     try {
       console.log('Actualizando usuario con cédula:', cedula, 'Datos:', data);
-      const usuario = await this.findByCedula(cedula); // Buscar por cédula
-      const updatedUsuario = await usuario.update(data); // Actualiza los datos
+      const usuario = await this.findByCedula(cedula); 
+      const updatedUsuario = await usuario.update(data); 
       return updatedUsuario;
     } catch (error) {
       console.error('Error en update:', error);
@@ -152,9 +151,9 @@ class UsuarioService {
   async delete(id) {
     try {
       console.log('Eliminando usuario con ID:', id);
-      const usuario = await this.findOne(id); // Buscar por ID
-      await usuario.destroy(); // Eliminar el usuario
-      return { deleted: true }; // Retorna un objeto indicando que fue eliminado
+      const usuario = await this.findOne(id); 
+      await usuario.destroy(); 
+      return { deleted: true }; 
     } catch (error) {
       console.error('Error en delete:', error);
       throw new Error('Error al eliminar usuario.');
@@ -276,36 +275,21 @@ async getCustodiados(cedula) {
   }
 }
 
-// El método assignCustodian permanece igual
+// El método assignCustodian 
 async assignCustodian(cedula, custodioId) {
   try {
-    // Validar que los parámetros sean correctos
     if (!cedula || !custodioId) {
-      throw new Error('Cédula y custodioId son requeridos');
-    }
-
-    // Buscar al usuario por su cédula
+      throw new Error('Cédula y custodioId son requeridos');}
     const persona = await models.Usuario.findOne({ where: { cedula } });
     if (!persona) {
-      throw new Error('No se encontró un usuario con la cédula proporcionada');
-    }
-
-    // Buscar al custodio por su ID
+      throw new Error('No se encontró un usuario con la cédula proporcionada');}
     const custodio = await models.Usuario.findOne({ where: { usuario_id: custodioId } });
     if (!custodio) {
-      throw new Error('No se encontró un custodio con el ID proporcionado');
-    }
-
-    // Verificar si el usuario intenta asignarse a sí mismo como custodio
+      throw new Error('No se encontró un custodio con el ID proporcionado');}
     if (persona.usuario_id === custodio.usuario_id) {
-      throw new Error('El usuario no puede asignarse a sí mismo como custodio');
-    }
-
-    // Asignar el custodio al usuario
+      throw new Error('El usuario no puede asignarse a sí mismo como custodio');}
     persona.idcustodio = custodioId;
     await persona.save();
-
-    // Devolver un mensaje de éxito
     return {
       message: 'Custodio asignado correctamente',
       persona: {
@@ -317,7 +301,6 @@ async assignCustodian(cedula, custodioId) {
       },
     };
   } catch (error) {
-    // Manejo de errores y devolución de mensaje
     return { error: error.message || 'Error al asignar custodio' };
   }
 }

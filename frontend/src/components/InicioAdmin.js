@@ -18,7 +18,7 @@ const InicioAdmin = () => {
           <li><Link to="/inicio-admin">Inicio</Link></li>
           <li><Link to="/gestion-usuario">Gestión de usuarios</Link></li>
           <li><Link to="/actualizar-datos">Actualizar Datos</Link></li>
-          <li><Link to="/auditoria">Registro de auditoria</Link></li>
+         
           <li><button onClick={handleLogout}>Cerrar Sesión</button></li>
         </ul>
       </aside>

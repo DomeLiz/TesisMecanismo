@@ -71,9 +71,7 @@ const GestionUsuarios = () => {
           <li>
             <button onClick={() => navigate('/actualizar-datos')}>Actualizar Datos</button>
           </li>
-          <li>
-            <button onClick={() => navigate('/auditoria')}>Registro de auditoría</button>
-          </li>
+         
           <li>
             <button onClick={handleLogout}>Cerrar sesión</button>
           </li>

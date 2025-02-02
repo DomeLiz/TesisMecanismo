@@ -70,13 +70,9 @@ const EditarDatosCustodiados = () => {
       const response = await axios.post(
         `http://localhost:3000/api/v1/auth/verify-otp-custodiado`,
         { email: formData.email, otp },
-        {
-          headers: {
+        {headers: {
             Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+          },});
       if (response.data.success) {
         await axios.put(
           `http://localhost:3000/api/v1/usuarios/cedula/${formData.cedula}`,
@@ -102,6 +98,11 @@ const EditarDatosCustodiados = () => {
       setErrorMessage('OTP incorrecto o expirado. Por favor, intenta nuevamente.');
     }
   };
+
+
+
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();

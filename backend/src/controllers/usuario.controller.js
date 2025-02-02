@@ -69,30 +69,18 @@ const service = new UsuarioService();
   const assignCustodian = async (req, res) => {
     try {
       const { cedula, custodioId } = req.body;
-  
-      // Validar que los datos requeridos están presentes
       if (!cedula || !custodioId) {
         return res.status(400).json({ message: 'Cédula y custodioId son requeridos' });
       }
-  
-      // Llamar al método de asignación del servicio
       const result = await service.assignCustodian(cedula, custodioId);
-  
-      // Verificar si el servicio devolvió un error
       if (result.error) {
         return res.status(400).json({ message: result.error });
       }
-  
-      // Responder con éxito
       return res.status(200).json({ message: result.message, data: result.persona });
     } catch (error) {
-      // Capturar errores no esperados
       return res.status(500).json({ message: error.message || 'Error interno del servidor' });
     }
   };
-  
-
-  
   
 
   // Obtener el custodio de un usuario por cédula
@@ -170,15 +158,11 @@ const verifyOtp = async (req, res) => {
 // Obtener los custodiados de un usuario por cédula
 const getCustodiados = async (req, res) => {
   try {
-    const { cedula } = req.params; // Obtener la cédula de los parámetros de la URL
-
+    const { cedula } = req.params; 
     if (!cedula) {
       throw new Error('La cédula es requerida');
     }
-
-    // Llamar al servicio para obtener los custodiados usando la cédula
     const result = await service.getCustodiados(cedula);
-
     res.status(200).json(result);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -193,10 +177,7 @@ const validateCustodian = async (req, res) => {
     if (!cedula || !custodioId) {
       throw new Error('La cédula y el ID del custodio son requeridos');
     }
-
-    // Llamamos al servicio para validar la relación entre el usuario y el custodio
     const result = await service.validateCustodian(cedula, custodioId);
-
     res.status(200).json(result);
   } catch (error) {
     res.status(400).json({ message: error.message });

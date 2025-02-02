@@ -112,17 +112,14 @@ const AsignacionCustodio = () => {
       setError('Primero debes enviar el OTP.');
       return;
     }
-
     const isOtpValid = await verifyOtp();
     if (isOtpValid) {
       try {
         setLoading(true);
         const payload = { cedula: cedulaAsignador, custodioId: parseInt(custodioId, 10) };
-
         const response = await axios.post('http://localhost:3000/api/v1/usuarios/assign-custodian', payload, {
           headers: { 'Content-Type': 'application/json' },
         });
-
         setMensaje(response.data.message || 'Custodio asignado correctamente.');
         setCustodioId('');
         setOtp('');

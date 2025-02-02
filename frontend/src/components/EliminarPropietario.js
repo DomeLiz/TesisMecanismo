@@ -136,13 +136,10 @@ const DatosCustodiados = () => {
             setErrorMessage('Primero debes enviar el OTP.');
             return;
         }
-
         const isOtpValid = await verifyOtp();
         if (isOtpValid) {
             try {
                 await eliminarDatosUsuario(selectedCustodiado.usuario_id);
-
-                // Actualizar la lista de custodiados
                 setCustodiados(custodiados.filter(c => c.usuario_id !== selectedCustodiado.usuario_id));
                 setShowOtpBox(null);
                 setOtp('');

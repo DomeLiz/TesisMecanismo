@@ -61,7 +61,7 @@ const VerifyOtp = () => {
       // Manejo detallado de errores
       if (error.response) {
         // Errores de respuesta del servidor
-        setError(`Error: ${error.response.data.message || 'Verificación fallida'}. Código de estado: ${error.response.status}`);
+        setError(`Error: ${error.response.data.message || 'Verificación fallida'}`);
       } else if (error.request) {
         // Errores de la solicitud que no reciben respuesta
         setError('Error: No se recibió respuesta del servidor.');

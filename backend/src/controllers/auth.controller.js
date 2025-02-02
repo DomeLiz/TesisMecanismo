@@ -4,13 +4,13 @@ const jwt = require('jsonwebtoken');
 const UsuarioService = require('../service/usuario.service');
 const usuarioService = new UsuarioService();
 const otpGenerator = require('otp-generator');
-const { sendOTP, sendLoginFailEmail, sendOtpFailEmail } = require('../mailer');
+const { sendOTP,  sendOtpFailEmail } = require('../mailer');
 const crypto = require('crypto');
 
 const otpStore = {}; 
 
 const MAX_FAILED_ATTEMPTS = 3; // Número máximo de intentos fallidos permitidos
-const BLOCK_TIME = 2 * 60 * 1000; // Tiempo de bloqueo en milisegundos (2 minutos)
+const BLOCK_TIME = 15 * 60 * 1000; // Tiempo de bloqueo en milisegundos (2 minutos)
 
 // Método de login optimizado
 const login = async (req, res) => {
@@ -48,13 +48,12 @@ const login = async (req, res) => {
       });
     }
 
-    // Comparar certificado en memoria usando hash MD5
+    
     const tempCertHash = crypto.createHash('md5').update(certificado.data).digest('hex');
     const storedCertHash = crypto.createHash('md5').update(user.certificado).digest('hex');
 
     if (tempCertHash !== storedCertHash) {
-      // Incrementar intentos fallidos
-      const failedAttempts = user.intentos_fallidos + 1;
+            const failedAttempts = user.intentos_fallidos + 1;
       await user.update({
         intentos_fallidos: failedAttempts,
         ultimo_intento_fallido: new Date(),
@@ -64,7 +63,7 @@ const login = async (req, res) => {
       if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
         return res.status(400).json({
           success: false,
-          message: 'Demasiados intentos fallidos. Tu cuenta está bloqueada por 2 minutos.',
+          message: 'Demasiados intentos fallidos. Tu cuenta está bloqueada por 15 minutos.',
         });
       }
 
@@ -98,14 +97,10 @@ const verifyOTP = async (req, res) => {
     const { cedula, otp } = req.body;
 
     if (otpStore[cedula] === otp) {
-      // Eliminar OTP tras verificación exitosa
       delete otpStore[cedula];
-
-      // Generar JWT y responder
       const token = jwt.sign({ cedula }, process.env.JWT_SECRET, { expiresIn: '1h' });
       res.json({ success: true, token });
     } else {
-      // Enviar correo si el OTP es incorrecto
       const person = await userservice.findByCedula(cedula);
       if (person && person.email) {
         await sendOtpFailEmail(person.email, cedula);
