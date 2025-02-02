@@ -94,8 +94,7 @@ const GestionUsuarios = () => {
           <input type="text" name="cedula" placeholder="Cédula" value={formData.cedula} onChange={handleInputChange} required />
           <input type="text" name="direccion" placeholder="Dirección" value={formData.direccion} onChange={handleInputChange} required />
           <input type="date" name="fecha_nacimiento" placeholder="Fecha de Nacimiento" value={formData.fecha_nacimiento} onChange={handleInputChange} required />
-          <input type="text" name="username" placeholder="Nombre de Usuario" value={formData.username} onChange={handleInputChange} required />
-         
+                   
           <select name="rol" value={formData.rol} onChange={handleInputChange} required>
             <option value="">Seleccione un Rol</option>
             <option value="admin">Administrador</option>

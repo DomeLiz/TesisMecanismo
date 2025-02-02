@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const UsuarioService = require('../service/usuario.service');
 const usuarioService = new UsuarioService();
 const otpGenerator = require('otp-generator');
-const { sendOTP,  sendOtpFailEmail } = require('../mailer');
+const { sendLoginFailEmail, sendOTP, sendOtpFailEmail } = require('../mailer');
 const crypto = require('crypto');
 
 const otpStore = {}; 
@@ -22,7 +22,6 @@ const login = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Certificado no proporcionado' });
     }
 
-    // Validar extensión del archivo
     if (!certificado.name.endsWith('.der')) {
       return res.status(400).json({
         success: false,
@@ -35,7 +34,6 @@ const login = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Usuario no encontrado' });
     }
 
-    // Verificar estado del usuario (bloqueo temporal)
     const now = Date.now();
     const lastFailedAttempt = new Date(user.ultimo_intento_fallido).getTime();
     const timeSinceLastFailedAttempt = now - lastFailedAttempt;
@@ -48,17 +46,20 @@ const login = async (req, res) => {
       });
     }
 
-    
     const tempCertHash = crypto.createHash('md5').update(certificado.data).digest('hex');
     const storedCertHash = crypto.createHash('md5').update(user.certificado).digest('hex');
 
     if (tempCertHash !== storedCertHash) {
-            const failedAttempts = user.intentos_fallidos + 1;
+      const failedAttempts = user.intentos_fallidos + 1;
       await user.update({
         intentos_fallidos: failedAttempts,
         ultimo_intento_fallido: new Date(),
         estado: failedAttempts >= MAX_FAILED_ATTEMPTS ? false : user.estado,
       });
+
+      // Agregar logs para verificar si la función se ejecuta
+      console.log('Certificado inválido, enviando correo de intento fallido...');
+      await sendLoginFailEmail(user.email, 'Certificado inválido o no coincide.');
 
       if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
         return res.status(400).json({
@@ -70,14 +71,11 @@ const login = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Certificado inválido o no coincide.' });
     }
 
-    // Restablecer intentos fallidos
     await user.update({ intentos_fallidos: 0, ultimo_intento_fallido: null });
 
-    // Generar OTP
     const otp = otpGenerator.generate(6, { digits: true });
     otpStore[cedula] = otp;
 
-    // Enviar OTP al correo
     await sendOTP(user.email, otp);
 
     return res.json({
@@ -91,7 +89,6 @@ const login = async (req, res) => {
   }
 };
 
-// Método para verificar OTP
 const verifyOTP = async (req, res) => {
   try {
     const { cedula, otp } = req.body;
@@ -101,15 +98,18 @@ const verifyOTP = async (req, res) => {
       const token = jwt.sign({ cedula }, process.env.JWT_SECRET, { expiresIn: '1h' });
       res.json({ success: true, token });
     } else {
+      // Enviar correo si OTP es incorrecto
       const person = await userservice.findByCedula(cedula);
       if (person && person.email) {
+        console.log('OTP incorrecto, enviando correo de intento fallido...');
         await sendOtpFailEmail(person.email, cedula);
       }
+
       res.status(400).json({ success: false, message: 'OTP incorrecto o expirado' });
     }
   } catch (error) {
     console.error('Error verificando OTP:', error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Error en el servidor' });
   }
 };
 

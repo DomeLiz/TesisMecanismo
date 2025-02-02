@@ -28,22 +28,18 @@ const sendOTP = async (to, otp) => {
 // Método para enviar correo de login fallido
 const sendLoginFailEmail = async (to, reason) => {
   try {
-    // Obtén la fecha y hora actual
+    console.log(`Enviando correo de intento fallido a: ${to}, razón: ${reason}`);
     const currentDate = new Date();
-    const formattedDate = currentDate.toLocaleDateString(); // Formatea la fecha
-    const formattedTime = currentDate.toLocaleTimeString(); // Formatea la hora
-    
-    // Registrar en la consola la fecha y hora del intento fallido
-    console.log(`Intento de inicio de sesión fallido. Fecha: ${formattedDate}, Hora: ${formattedTime}, Razón: ${reason}`);
-    
-    // Envía el correo
+    const formattedDate = currentDate.toLocaleDateString();
+    const formattedTime = currentDate.toLocaleTimeString();
+
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to,
       subject: 'Intento fallido de inicio de sesión',
       text: `Hubo un intento fallido de inicio de sesión en tu cuenta.\nRazón: ${reason}\nFecha: ${formattedDate}\nHora: ${formattedTime}`,
     });
-    
+
     console.log('Correo de intento fallido enviado correctamente');
   } catch (error) {
     console.error('Error al enviar el correo de intento fallido:', error);
@@ -94,7 +90,7 @@ const sendFiles = async (to, subject, bodyText, attachments) => {
 module.exports = { 
   sendOTP, 
   sendLoginFailEmail, 
-  sendOtpFailEmail, 
+  sendOtpFailEmail,
   sendFiles, 
 };
 
